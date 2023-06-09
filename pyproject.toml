@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "readit"
+version = "0.1.0"
+description = ""
+authors = ["Gilad Barnea <giladbrn@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+elevenlabs = "^0.2.18"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
