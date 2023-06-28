@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "readit"
+name = "aloud"
 version = "0.1.0"
 description = ""
 authors = ["Gilad Barnea <giladbrn@gmail.com>"]
