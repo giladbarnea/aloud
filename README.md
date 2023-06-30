@@ -16,4 +16,9 @@ The rhetoric they provide is typically dull and non-engaging. This hurts compreh
 
 ## How I plan to solve it
 
-Mending the text with well designed LLM agents so that, when played through a high quality TTS provider (e.g ElevenLabs), it feels like someone is reading the text to you, rather than a robot spelling it out verbatim. 
+Mending the text with well designed LLM agents so that, when played through a high quality TTS provider (e.g ElevenLabs), it feels like someone is reading the text to you, rather than a robot spelling it out verbatim.
+
+## Different types of text require different types of reading
+
+A news article is very different from a dense scientific paper, which is very different from code documentation.
+`aloud` should be very adaptable to the type of text it's reading. Code blocks should be handled one way, images another, and so on.
