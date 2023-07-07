@@ -24,6 +24,9 @@ line-length = 120
 skip-magic-trailing-comma = true
 preview = true
 
+[tool.isort]
+profile = "black"
+
 [tool.pytest.ini_options]
 python_files = ["tests/**/*.py"]
 filterwarnings = ["default:invalid escape sequence:DeprecationWarning"]

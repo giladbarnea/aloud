@@ -1,7 +1,6 @@
 from pathlib import Path
 
-from langchain.document_loaders import WebBaseLoader, BSHTMLLoader
-
+from langchain.document_loaders import BSHTMLLoader, WebBaseLoader
 
 ARTICLE_URL: str = "https://github.blog/2023-02-06-the-technology-behind-githubs-new-code-search/"
 ARTICLE_HTML_PATH: Path = Path(__file__).parent / "github_code_search_technology_behind.html"

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from langchain.document_loaders import WebBaseLoader, BSHTMLLoader
+from langchain.document_loaders import BSHTMLLoader, WebBaseLoader, tomarkdown
 
 ARTICLE_URL: str = "https://python.langchain.com/docs/modules/data_connection/document_loaders/integrations/web_base"
 
@@ -16,3 +16,9 @@ def test_loads_fine():
     )
     assert "Loading multiple webpages" in doc.page_content
     assert '"https://www.walmart.com/search?q=parrots"' in doc.page_content
+
+
+def test_converts_to_markdown():
+    loader = tomarkdown.ToMarkdownLoader(ARTICLE_URL, api_key=Path("~/.2markdown").expanduser().read_text().strip())
+    doc = loader.load()[0]
+    print(doc)
