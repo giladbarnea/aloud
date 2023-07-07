@@ -5,6 +5,8 @@ description = ""
 authors = ["Gilad Barnea <giladbrn@gmail.com>"]
 readme = "README.md"
 
+
+
 [tool.poetry.dependencies]
 python = "^3.11"
 elevenlabs = "^0.2.18"
