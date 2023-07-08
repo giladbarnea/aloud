@@ -1,2 +1,5 @@
+from pathlib import Path
+
+
 def to_speakable(thing):
-    pass
+    return Path(thing).read_text()
