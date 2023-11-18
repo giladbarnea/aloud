@@ -1,22 +1,25 @@
 import pickle
+import tempfile
 from pathlib import Path
 
 import click
-import convert
+from aloud import convert
 
 
 @click.command()
 @click.argument("thing")
 def main(thing):
-    audio = get_audio(thing)
-    with open("how_to_prepare_a_talk.wav", "wb") as f:
-        pickle.dump(audio, f)
-
-    xi.play(audio)
+    speakable = convert.to_speakable(thing)
+    with tempfile.NamedTemporaryFile(mode='w', suffix=".txt", delete=False) as tmp_speakable:
+        tmp_speakable.write(speakable)
+    print('Wrote speakable to', tmp_speakable.name)
+    audio = convert.to_audio(speakable)
+    with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp_audio:
+        tmp_audio.write(audio)
+    click.launch(tmp_audio.name)
 
 
 def get_audio(thing):
-    xi.set_api_key(Path("~/.elevenlabs-token").expanduser().read_text().strip())
     text = convert.to_speakable(thing)
     audio = xi.generate(
         text=text,

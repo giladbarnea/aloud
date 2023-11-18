@@ -1,20 +1,24 @@
 import textwrap
+from pathlib import Path
 
+from rich import print
 from openai import OpenAI
 
 ARTICLE_URL = "https://www.kpassa.me/posts/google"
 
 
-def test_something(get_markdown):
+def test_generate_audio(get_markdown):
     markdown = get_markdown(ARTICLE_URL)
     oai = OpenAI()
     prompt = textwrap.dedent("""
     You are given a markdown representation of an article from the internet.
-    
-    Convert it such that it is a 100% textual representation of the article, which can be read out loud by a human to a colleague, and the colleague will understand what the markdown formatting typically tries to convey, namely, the hierarchy of the document (subtitles inside titles inside sections, etc).
-    
-    Don't modify the actual text of the article. Only deal with the structure.
-    
+
+    Convert the syntax of the markdown into text that can be read out. 
+    The general principle is that, as you know, saying "hashtag hastag <something>" does not make sense to humans, so you should convert that to "The title of the next section is <something>.".
+    Similarly, saying "Open square brackets, Press here, close square brackets, open parenthesis, https://www.google.com, close parenthesis" does not make sense to humans, so you should convert that to "There's a link to Google here.".
+    Generalize this to everything that when pr6onounced literally does not make sense to humans.
+    Keep the text of the article exactly the same.
+
     The article's markdown representation is:
     ```md
     {markdown}
@@ -24,4 +28,15 @@ def test_something(get_markdown):
         messages=[{"role": "user", "content": prompt}], model="gpt-4-1106-preview"
     )
     result = chat_completion.choices[0].message.content
-    print(result)
+    chunk_size = 4096
+    chunks = [
+        "\n".join(filter(bool, result[i : i + chunk_size].splitlines())) for i in range(0, len(result), chunk_size)
+    ]
+    for i, chunk in enumerate(chunks[:-1]):
+        chunk_lines = chunk.splitlines()
+        last_chunk_line = chunk_lines[-1]
+        chunks[i] = "\n".join(chunk_lines[:-1])
+        chunks[i + 1] = last_chunk_line + chunks[i + 1]
+    chunk = "\n".join(filter(bool, result[:4096].splitlines()))
+    audio = oai.audio.speech.create(input=chunk, model="tts-1", voice="alloy", response_format="mp3")
+    (Path(__file__).parent / "we_are_drowning_in_googles_magnanimity.mp3").write_bytes(audio.content)
