@@ -3,7 +3,6 @@ from pathlib import Path
 
 import click
 import convert
-import elevenlabs as xi
 
 
 @click.command()
