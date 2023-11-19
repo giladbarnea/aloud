@@ -10,9 +10,9 @@ from aloud import convert
 @click.argument("thing")
 def main(thing):
     speakable = convert.to_speakable(thing)
-    with tempfile.NamedTemporaryFile(mode='w', suffix=".txt", delete=False) as tmp_speakable:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as tmp_speakable:
         tmp_speakable.write(speakable)
-    print('Wrote speakable to', tmp_speakable.name)
+    print("Wrote speakable to", tmp_speakable.name)
     audio = convert.to_audio(speakable)
     with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp_audio:
         tmp_audio.write(audio)
