@@ -2389,6 +2389,24 @@ files = [
 ]
 
 [[package]]
+name = "pdbr"
+version = "0.8.8"
+description = "Pdb with Rich library."
+optional = false
+python-versions = ">=3.7.9,<4.0.0"
+files = [
+    {file = "pdbr-0.8.8-py3-none-any.whl", hash = "sha256:32c68956b9386198e38b9771e05e98f937e5410198f341e94db19421441bbb29"},
+    {file = "pdbr-0.8.8.tar.gz", hash = "sha256:e457414a9023fcbffb155699f1283711d1f31e00c218e3076397b359c94c0539"},
+]
+
+[package.dependencies]
+pyreadline3 = {version = ">=3.4.1,<4.0.0", markers = "sys_platform == \"win32\""}
+rich = "*"
+
+[package.extras]
+ipython = ["ipython"]
+
+[[package]]
 name = "pdf2image"
 version = "1.16.3"
 description = "A wrapper around the pdftoppm and pdftocairo command line tools to convert PDF to a PIL Image list."
@@ -2728,6 +2746,17 @@ python-versions = ">=3.6"
 files = [
     {file = "pypandoc-1.11-py3-none-any.whl", hash = "sha256:b260596934e9cfc6513056110a7c8600171d414f90558bf4407e68b209be8007"},
     {file = "pypandoc-1.11.tar.gz", hash = "sha256:7f6d68db0e57e0f6961bec2190897118c4d305fc2d31c22cd16037f22ee084a5"},
+]
+
+[[package]]
+name = "pyreadline3"
+version = "3.4.1"
+description = "A python implementation of GNU readline."
+optional = false
+python-versions = "*"
+files = [
+    {file = "pyreadline3-3.4.1-py3-none-any.whl", hash = "sha256:b0efb6516fd4fb07b45949053826a62fa4cb353db5be2bbb4a7aa1fdd1e345fb"},
+    {file = "pyreadline3-3.4.1.tar.gz", hash = "sha256:6f3d1f7b8a31ba32b73917cefc1f28cc660562f39aea8646d30bd6eff21f7bae"},
 ]
 
 [[package]]
@@ -4017,4 +4046,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "aeaae28355a612ed3e4b9e03eed55659d14c4246e2ecd946091785de21130e70"
+content-hash = "6e06c6815e986c4da0cae4ed37a5c79b7a12716e53bd7358e87d81cdb2bcedf1"

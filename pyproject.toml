@@ -27,6 +27,7 @@ pytest = "^7.4.0"
 ipython = "^8.14.0"
 jupyter = "^1.0.0"
 rich = "^13.4.2"
+pdbr = "^0.8.8"
 
 [tool.poetry.scripts]
 aloud = 'aloud.main:main'
