@@ -1,27 +1,12 @@
 from concurrent.futures import ThreadPoolExecutor
-
 from openai import OpenAI
 from rich import get_console
 
 
 def to_audio(speakable: str) -> bytes:
     console = get_console()
-    chunk_size = 4096
-    article_chunks = [
-        "\n".join(filter(bool, speakable[i : i + chunk_size].splitlines()))
-        for i in range(0, len(speakable), chunk_size)
-    ]
-    # for i, article_chunk in enumerate(article_chunks[:-1]):
-    #     chunk_lines = article_chunk.splitlines()
-    #     last_chunk_line = chunk_lines[-1]
-    #     article_chunks[i] = "\n".join(chunk_lines[:-1])
-    #     article_chunks[i + 1] = last_chunk_line + article_chunks[i + 1]
-    for i in range(len(article_chunks) - 1):
-        chunk_lines = article_chunks[i].splitlines()
-        last_line = chunk_lines.pop()  # Remove the last line from the current chunk
-        article_chunks[i] = "\n".join(chunk_lines)  # Update the current chunk without the last line
-        article_chunks[i + 1] = last_line + "\n" + article_chunks[
-            i + 1]  # Prepend the removed last line to the next chunk
+    chunk_size = 4000  # 4096 is the max, but we need to leave some space for the joined newlines
+    article_chunks = [speakable[i : i + chunk_size] for i in range(0, len(speakable), chunk_size)]
     oai = OpenAI()
     with console.status(
         f"Converting speakable to audio with alloy@tts-1...", spinner="aesthetic", refresh_per_second=100
@@ -36,5 +21,5 @@ def to_audio(speakable: str) -> bytes:
         audios = [future.result() for future in futures]
 
     audio = b"".join(audio.content for audio in audios)
-    print("🎵 Done generating audio!")
+    console.print("[b]🎵 Done generating audio!")
     return audio

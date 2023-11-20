@@ -1,18 +1,21 @@
+import tempfile
 import textwrap
 from pathlib import Path
 
+import requests
+from bs4 import BeautifulSoup
 from openai import OpenAI
 from plum import dispatch
-from bs4 import BeautifulSoup
-import requests
+from rich import get_console
 from rich.color import Color
 from rich.style import Style
 from rich.text import Text
+from rich.traceback import install
 
 from .to_markdown import to_markdown
-from rich import get_console
-from rich.traceback import install
+
 install(show_locals=True)
+
 
 def fetch_html(url: str, *, remove_head: bool = False) -> str:
     response = requests.get(url)
@@ -33,12 +36,17 @@ def to_speakable(path: Path):
 def to_speakable(thing: str) -> str:
     console = get_console()
     if thing.startswith("http"):
-        with console.status("Getting HTML of article...", spinner="aesthetic", refresh_per_second=100) as live:
+        with console.status("Fetching HTML of article...", spinner="aesthetic", refresh_per_second=100) as live:
             html = fetch_html(thing, remove_head=True)
     else:
         html = thing
+    tmp_dir = tempfile.mkdtemp()
+    html_path = Path(tmp_dir) / "speakable.html"
+    html_path.write_text(html)
     with console.status("Converting to markdown...", spinner="aesthetic", refresh_per_second=100) as live:
         markdown = to_markdown(html)
+    markdown_path = Path(tmp_dir) / "speakable.md"
+    markdown_path.write_text(markdown)
     oai = OpenAI()
     prompt = textwrap.dedent("""
     You are given a markdown representation of an article from the internet.
@@ -53,7 +61,7 @@ def to_speakable(thing: str) -> str:
     Sentences with a word or a short phrase in emphasis should be followed by "the '<emphasized-words-with-hyphens>' part was emphasized".
     Generalize this to the entirety of the markdown syntax.
     The transitions should be smooth and natural.
-    Keep the text of the article exactly the same.
+    Where the text is plain, without any markdown syntax, leave it exactly the same.
 
     The article's markdown representation is:
     ```md
@@ -72,7 +80,7 @@ def to_speakable(thing: str) -> str:
             speakable_lines = speakable[-2000:].splitlines()
             display_speakable = Text()
             num_lines = len(speakable_lines)
-            intensity_step = max(int(255 / (num_lines - 1)), 20) if num_lines > 1 else 255
+            intensity_step = max(int(255 / (num_lines - 1)), 100) if num_lines > 1 else 255
             for i, line in enumerate(speakable_lines[:num_lines]):
                 intensity = i * intensity_step
                 color = Color.from_rgb(intensity, intensity, intensity)
