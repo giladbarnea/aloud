@@ -21,10 +21,11 @@ def main(thing, output_dir=None, only_speakable=False, only_audio=False):
     if only_audio and only_speakable:
         raise click.BadParameter("Cannot specify both --only-audio and --only-speakable")
     if only_audio:
-        speakable = (Path(output_dir) / "speakable.txt").read_text()
+        speakable_path = (Path(output_dir) / "speakable.txt")
+        speakable: str = speakable_path.read_text()
         console.print("\n[b]Fetched speakable from", output_dir)
     else:
-        speakable = convert.to_speakable(thing)
+        speakable: str = convert.to_speakable(thing)
         if not output_dir:
             output_dir = tempfile.mkdtemp()
         output_text_file = Path(output_dir) / "speakable.txt"

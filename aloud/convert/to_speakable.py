@@ -71,7 +71,7 @@ def to_speakable(thing: str) -> str:
     model = "gpt-4-1106-preview"
     speakable = "\n"
     with console.status(
-        f"Converting markdown to speakable with {model}...", spinner="aesthetic", refresh_per_second=100
+        f"Converting markdown to speakable with {model}...", spinner="aesthetic"
     ) as live:
         for stream_chunk in oai.chat.completions.create(
             messages=[{"role": "user", "content": prompt}], model=model, temperature=0, stream=True
