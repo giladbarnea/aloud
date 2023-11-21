@@ -27,26 +27,26 @@ def fetch_html(url: str, *, remove_head: bool = False) -> str:
     return soup.prettify()
 
 
-def to_speakable(thing, output_dir=None) -> Generator[str, None, None]:
+def to_speakable(thing: str | Path, output_dir: str | Path = None) -> Generator[str, None, None]:
     console = get_console()
     if Path(thing).is_file():
         thing = Path(thing).read_text()
-    if thing.startswith("http"):
+    if (url := str(thing)).startswith("http"):
         with console.status("Fetching HTML of article...", spinner="aesthetic", refresh_per_second=10) as live:
-            html = fetch_html(thing, remove_head=True)
+            html = fetch_html(url, remove_head=True)
     else:
         html = thing
     if not output_dir:
         output_dir = tempfile.mkdtemp()
     output_dir = Path(output_dir)
     html_path = output_dir / f"{output_dir.name}.html"
-    console.print("\n[b]Wrote HTML to", html_path.name)
+    console.print("\n[b green]Wrote HTML to", html_path.name)
     html_path.write_text(html)
     with console.status("Converting to markdown...", spinner="aesthetic", refresh_per_second=10) as live:
         markdown = to_markdown(html)
     markdown_path = output_dir / f"{output_dir.name}.md"
     markdown_path.write_text(markdown)
-    console.print("\n[b]Wrote markdown to", markdown_path.name)
+    console.print("\n[b green]Wrote markdown to", markdown_path.name)
     oai = OpenAI()
     prompt = textwrap.dedent("""
     You are given a markdown representation of an article from the internet.
@@ -73,7 +73,7 @@ def to_speakable(thing, output_dir=None) -> Generator[str, None, None]:
     with console.status(
         f"Converting markdown to speakable with {model}...", spinner="aesthetic", refresh_per_second=10
     ) as live:
-        start_color = (100, 100, 100)
+        start_color = (125, 125, 125)
         end_color = (255, 255, 255)
         for stream_chunk in oai.chat.completions.create(
             messages=[{"role": "user", "content": prompt}], model=model, temperature=0, stream=True

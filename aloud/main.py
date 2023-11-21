@@ -13,11 +13,11 @@ console = get_console()
 
 @click.command()
 @click.argument("thing")
-@click.option("-o", "--output", "output_dir", type=click.Path(dir_okay=True, file_okay=False), required=False)
+@click.option("-o", "--output", "output_dir", type=click.Path(dir_okay=True, file_okay=False), required=True)
 @click.option("--only-speakable", "only_speakable", is_flag=True, default=False)
 @click.option("--only-audio", "only_audio", is_flag=True, default=False)
 @click.option("-k", "--api-key", "openai_api_key", envvar="OPENAI_API_KEY", required=False)
-def main(thing, output_dir: str, only_speakable, only_audio, openai_api_key):
+def main(thing, output_dir: str, only_speakable: bool, only_audio: bool, openai_api_key: str):
     openai_api_key = openai_api_key or get_openai_api_key()
     assert_args_ok(only_audio, only_speakable, output_dir)
     output_dir = prepare_output_dir(output_dir)
