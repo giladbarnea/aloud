@@ -9,6 +9,7 @@ from openai import OpenAI
 from rich import get_console
 from rich.color import Color
 from rich.style import Style
+from rich.text import Text
 from rich.traceback import install
 
 from .to_markdown import to_markdown
@@ -37,12 +38,15 @@ def to_speakable(thing, output_dir=None) -> Generator[str, None, None]:
         html = thing
     if not output_dir:
         output_dir = tempfile.mkdtemp()
-    html_path = Path(output_dir) / "speakable.html"
+    output_dir = Path(output_dir)
+    html_path = output_dir / "speakable.html"
+    console.print("\n[b]Wrote HTML to", html_path.name)
     html_path.write_text(html)
     with console.status("Converting to markdown...", spinner="aesthetic", refresh_per_second=10) as live:
         markdown = to_markdown(html)
-    markdown_path = Path(output_dir) / "speakable.md"
+    markdown_path = output_dir / "speakable.md"
     markdown_path.write_text(markdown)
+    console.print("\n[b]Wrote markdown to", markdown_path.name)
     oai = OpenAI()
     prompt = textwrap.dedent("""
     You are given a markdown representation of an article from the internet.
@@ -69,21 +73,34 @@ def to_speakable(thing, output_dir=None) -> Generator[str, None, None]:
     with console.status(
         f"Converting markdown to speakable with {model}...", spinner="aesthetic", refresh_per_second=10
     ) as live:
+        start_color = (100, 100, 100)
+        end_color = (255, 255, 255)
         for stream_chunk in oai.chat.completions.create(
             messages=[{"role": "user", "content": prompt}], model=model, temperature=0, stream=True
         ):
             delta = stream_chunk.choices[0].delta.content or ""
             yield delta
             speakable += delta
-            live.update(speakable[-1000:], spinner_style=Style(color=Color.from_rgb(0, 0, 0)))
-            # speakable_lines = speakable.splitlines()
-            # display_speakable = Text()
-            # num_lines = 100
-            # intensity_step = max(int(255 / (num_lines - 1)), 100) if num_lines > 1 else 255
-            # for i, line in enumerate(speakable_lines[-num_lines:]):
-            #     intensity = i * intensity_step
-            #     color = Color.from_rgb(intensity, intensity, intensity)
-            #     display_speakable += Text(f"{line}\n", style=Style(color=color))
-            # display_speakable += Text("\n".join(speakable_lines[num_lines:]), style="white")
-            # live.update(display_speakable, spinner_style=Style(color=Color.from_rgb(0, 0, 0)))
+            speakable_lines = speakable.splitlines()
+            display_speakable = Text()
+            num_lines = console.height
+            for i, line in enumerate(speakable_lines[-num_lines:]):
+                color_rgb = get_gradient_color(start_color, end_color, num_lines - 1, i)
+                color = Color.from_rgb(*color_rgb)
+                display_speakable += Text(f"{line}\n", style=Style(color=color))
+            live.update(display_speakable, spinner_style=Style(color=Color.from_rgb(0, 0, 0)))
     console.print(speakable)
+    speakable_text_path = output_dir / "speakable.txt"
+    speakable_text_path.write_text(speakable)
+    console.print("\n[b green]Wrote speakable to", speakable_text_path)
+
+
+def get_gradient_color(start_color, end_color, num_steps, step):
+    r_start, g_start, b_start = start_color
+    r_end, g_end, b_end = end_color
+
+    r = r_start + (r_end - r_start) * step / num_steps
+    g = g_start + (g_end - g_start) * step / num_steps
+    b = b_start + (b_end - b_start) * step / num_steps
+
+    return int(r), int(g), int(b)

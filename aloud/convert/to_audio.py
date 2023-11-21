@@ -22,7 +22,7 @@ def to_audio(speakable: str) -> bytes:
         audios = [future.result() for future in futures]
 
     audio = b"".join(audios)
-    console.print("[b]🎵 Done generating audio!")
+    console.print("\n[b green]🎵 Done generating audio!")
     return audio
 
 
