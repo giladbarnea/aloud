@@ -31,7 +31,7 @@ def main(thing, output_dir: str, only_speakable, only_audio, openai_api_key):
 
 @dispatch
 def process_audio(output_dir: Path) -> bytes:
-    speakable_path = Path(output_dir) / "speakable.txt"
+    speakable_path = output_dir / f"{output_dir.name}.txt"
     if not speakable_path.exists():
         raise FileNotFoundError(f"{speakable_path} does not exist, can't convert to audio")
     speakable: str = speakable_path.read_text()
@@ -42,7 +42,7 @@ def process_audio(output_dir: Path) -> bytes:
 @dispatch
 def process_audio(speakable: str, output_dir: Path) -> bytes:
     audio = convert.to_audio(speakable)
-    output_audio_file = Path(output_dir) / "speakable.mp3"
+    output_audio_file = output_dir / f"{output_dir.name}.mp3"
     with output_audio_file.open("wb") as audio_path:
         audio_path.write(audio)
     console.print("\n[b green]Wrote audio to", audio_path.name)

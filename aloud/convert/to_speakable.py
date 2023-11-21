@@ -39,12 +39,12 @@ def to_speakable(thing, output_dir=None) -> Generator[str, None, None]:
     if not output_dir:
         output_dir = tempfile.mkdtemp()
     output_dir = Path(output_dir)
-    html_path = output_dir / "speakable.html"
+    html_path = output_dir / f"{output_dir.name}.html"
     console.print("\n[b]Wrote HTML to", html_path.name)
     html_path.write_text(html)
     with console.status("Converting to markdown...", spinner="aesthetic", refresh_per_second=10) as live:
         markdown = to_markdown(html)
-    markdown_path = output_dir / "speakable.md"
+    markdown_path = output_dir / f"{output_dir.name}.md"
     markdown_path.write_text(markdown)
     console.print("\n[b]Wrote markdown to", markdown_path.name)
     oai = OpenAI()
@@ -90,7 +90,7 @@ def to_speakable(thing, output_dir=None) -> Generator[str, None, None]:
                 display_speakable += Text(f"{line}\n", style=Style(color=color))
             live.update(display_speakable, spinner_style=Style(color=Color.from_rgb(0, 0, 0)))
     console.print(speakable)
-    speakable_text_path = output_dir / "speakable.txt"
+    speakable_text_path = output_dir / f"{output_dir.name}.txt"
     speakable_text_path.write_text(speakable)
     console.print("\n[b green]Wrote speakable to", speakable_text_path)
 
