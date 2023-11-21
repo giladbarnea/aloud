@@ -1,15 +1,14 @@
 import tempfile
 import textwrap
+from collections.abc import Generator
 from pathlib import Path
 
 import requests
 from bs4 import BeautifulSoup
 from openai import OpenAI
-from plum import dispatch
 from rich import get_console
 from rich.color import Color
 from rich.style import Style
-from rich.text import Text
 from rich.traceback import install
 
 from .to_markdown import to_markdown
@@ -27,31 +26,28 @@ def fetch_html(url: str, *, remove_head: bool = False) -> str:
     return soup.prettify()
 
 
-@dispatch
-def to_speakable(path: Path):
-    return to_speakable(path.read_text())
-
-
-@dispatch
-def to_speakable(thing: str) -> str:
+def to_speakable(thing, output_dir=None) -> Generator[str, None, None]:
     console = get_console()
+    if Path(thing).is_file():
+        thing = Path(thing).read_text()
     if thing.startswith("http"):
-        with console.status("Fetching HTML of article...", spinner="aesthetic", refresh_per_second=100) as live:
+        with console.status("Fetching HTML of article...", spinner="aesthetic", refresh_per_second=10) as live:
             html = fetch_html(thing, remove_head=True)
     else:
         html = thing
-    tmp_dir = tempfile.mkdtemp()
-    html_path = Path(tmp_dir) / "speakable.html"
+    if not output_dir:
+        output_dir = tempfile.mkdtemp()
+    html_path = Path(output_dir) / "speakable.html"
     html_path.write_text(html)
-    with console.status("Converting to markdown...", spinner="aesthetic", refresh_per_second=100) as live:
+    with console.status("Converting to markdown...", spinner="aesthetic", refresh_per_second=10) as live:
         markdown = to_markdown(html)
-    markdown_path = Path(tmp_dir) / "speakable.md"
+    markdown_path = Path(output_dir) / "speakable.md"
     markdown_path.write_text(markdown)
     oai = OpenAI()
     prompt = textwrap.dedent("""
     You are given a markdown representation of an article from the internet.
 
-    Convert the syntax of the markdown into text that can be read out. 
+    Convert the syntax of the markdown into text that can be read out, and keep any real text that is not markdown syntax as-is.
     The general principle is that, as you know, saying "hashtag hastag <something>" does not make sense to humans, so you should convert that to something like "Moving on to the next part: <something>.", or "Next: <something>", or similar (be creative, mix it up).
     Similarly, saying "Open square brackets, Press here, close square brackets, open parenthesis, https://www.google.com, close parenthesis" does not make sense to humans, so you should convert that to "There's a link to Google here.".
     If a title is followed immediately by a subtitle, say "Moving on to the next part: <title>. Subtitle: <subtitle>".
@@ -61,7 +57,7 @@ def to_speakable(thing: str) -> str:
     Sentences with a word or a short phrase in emphasis should be followed by "the '<emphasized-words-with-hyphens>' part was emphasized".
     Generalize this to the entirety of the markdown syntax.
     The transitions should be smooth and natural.
-    Where the text is plain, without any markdown syntax, leave it exactly the same.
+    Where the text is plain, without any markdown syntax, keep it exactly the same. Do not summarize.
 
     The article's markdown representation is:
     ```md
@@ -71,21 +67,23 @@ def to_speakable(thing: str) -> str:
     model = "gpt-4-1106-preview"
     speakable = "\n"
     with console.status(
-        f"Converting markdown to speakable with {model}...", spinner="aesthetic"
+        f"Converting markdown to speakable with {model}...", spinner="aesthetic", refresh_per_second=10
     ) as live:
         for stream_chunk in oai.chat.completions.create(
             messages=[{"role": "user", "content": prompt}], model=model, temperature=0, stream=True
         ):
-            speakable += stream_chunk.choices[0].delta.content or ""
-            speakable_lines = speakable[-2000:].splitlines()
-            display_speakable = Text()
-            num_lines = len(speakable_lines)
-            intensity_step = max(int(255 / (num_lines - 1)), 100) if num_lines > 1 else 255
-            for i, line in enumerate(speakable_lines[:num_lines]):
-                intensity = i * intensity_step
-                color = Color.from_rgb(intensity, intensity, intensity)
-                display_speakable += Text(f"{line}\n", style=Style(color=color))
-            display_speakable += Text("\n".join(speakable_lines[num_lines:]), style="white")
-            live.update(display_speakable, spinner_style=Style(color=Color.from_rgb(0, 0, 0)))
+            delta = stream_chunk.choices[0].delta.content or ""
+            yield delta
+            speakable += delta
+            live.update(speakable[-1000:], spinner_style=Style(color=Color.from_rgb(0, 0, 0)))
+            # speakable_lines = speakable.splitlines()
+            # display_speakable = Text()
+            # num_lines = 100
+            # intensity_step = max(int(255 / (num_lines - 1)), 100) if num_lines > 1 else 255
+            # for i, line in enumerate(speakable_lines[-num_lines:]):
+            #     intensity = i * intensity_step
+            #     color = Color.from_rgb(intensity, intensity, intensity)
+            #     display_speakable += Text(f"{line}\n", style=Style(color=color))
+            # display_speakable += Text("\n".join(speakable_lines[num_lines:]), style="white")
+            # live.update(display_speakable, spinner_style=Style(color=Color.from_rgb(0, 0, 0)))
     console.print(speakable)
-    return speakable.strip()

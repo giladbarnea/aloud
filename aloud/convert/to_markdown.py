@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 import html2text
 from openai import OpenAI
 
-oai = OpenAI()
+module_cache = {}
 
 
 def to_markdown(html, *, ignore_links: bool = True) -> str:
@@ -51,10 +51,13 @@ def get_first_real_article_line(markdown):
     {markdown}
     ```
     """).format(markdown=markdown).strip()
+    if not (oai := module_cache.get("oai")):
+        oai = OpenAI()
+        module_cache["oai"] = oai
     chat_completion = oai.chat.completions.create(
         messages=[{"role": "system", "content": prompt}], model="gpt-4-1106-preview", temperature=0, stream=False
     )
-    first_real_article_line = chat_completion.choices[0].message.content.strip()
+    first_real_article_line = chat_completion.choices[0].message.content.splitlines()[0]
     return first_real_article_line
 
 
@@ -69,8 +72,11 @@ def get_last_real_article_line(markdown):
     {markdown}
     ```
     """).format(markdown=markdown).strip()
+    if not (oai := module_cache.get("oai")):
+        oai = OpenAI()
+        module_cache["oai"] = oai
     chat_completion = oai.chat.completions.create(
         messages=[{"role": "system", "content": prompt}], model="gpt-4-1106-preview", temperature=0, stream=False
     )
-    last_real_article_line = chat_completion.choices[0].message.content.strip()
+    last_real_article_line = chat_completion.choices[0].message.content.splitlines()[0]
     return last_real_article_line

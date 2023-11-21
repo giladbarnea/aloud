@@ -40,6 +40,7 @@ if (parent / '.ipython/extensions').is_dir() and str(parent / '.ipython') not in
 
 %load_ext extensions.copy
 %load_ext extensions.ipickle
+%load_ext extensions.ijson
 
 try:
     %load_ext ipython_clipboard
