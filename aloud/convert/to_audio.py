@@ -1,3 +1,4 @@
+import random
 import builtins
 from concurrent.futures import ThreadPoolExecutor
 from typing import Literal
@@ -16,9 +17,7 @@ def to_audio(speakable: str) -> bytes:
         builtins.live = live
         with ThreadPoolExecutor() as executor:
             futures = [
-                executor.submit(
-                    chunk_to_audio, input=article_chunk, model="tts-1", voice="alloy", response_format="mp3"
-                )
+                executor.submit(chunk_to_audio, input=article_chunk, model="tts-1", response_format="mp3")
                 for article_chunk in article_chunks
             ]
         audios = [future.result() for future in futures]
@@ -31,8 +30,10 @@ def to_audio(speakable: str) -> bytes:
 def chunk_to_audio(
     input: str,
     model: Literal["tts-1", "tts-1-hd"] = "tts-1",
-    voice: Literal["alloy", "echo", "fable", "onyx", "nova", "shimmer"] = "alloy",
+    voice: Literal["alloy", "echo", "fable", "onyx", "nova", "shimmer"] = None,
     response_format: Literal["mp3", "opus", "aac", "flac"] = "mp3",
 ) -> bytes:
+    if not voice:
+        voice = random.choice(["alloy", "echo", "fable", "onyx", "nova", "shimmer"])
     oai = OpenAI()
     return oai.audio.speech.create(input=input, model=model, voice=voice, response_format=response_format).content
