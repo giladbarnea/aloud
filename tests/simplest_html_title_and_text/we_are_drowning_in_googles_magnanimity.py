@@ -1,8 +1,8 @@
 import textwrap
 from pathlib import Path
 
-from rich import print
 from openai import OpenAI
+from rich import print
 
 ARTICLE_URL = "https://www.kpassa.me/posts/google"
 

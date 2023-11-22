@@ -1,5 +1,5 @@
-import random
 import builtins
+import random
 from concurrent.futures import ThreadPoolExecutor
 from typing import Literal
 

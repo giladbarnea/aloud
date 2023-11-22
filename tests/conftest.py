@@ -1,6 +1,7 @@
 import os
-import requests
+
 import pytest
+import requests
 from pytest import fixture
 
 
