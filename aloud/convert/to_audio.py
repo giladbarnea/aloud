@@ -1,3 +1,4 @@
+import builtins
 from concurrent.futures import ThreadPoolExecutor
 from typing import Literal
 
@@ -12,6 +13,7 @@ def to_audio(speakable: str) -> bytes:
     with console.status(
         f"Converting speakable to audio with alloy@tts-1...", spinner="aesthetic", refresh_per_second=10
     ) as live:
+        builtins.live = live
         with ThreadPoolExecutor() as executor:
             futures = [
                 executor.submit(

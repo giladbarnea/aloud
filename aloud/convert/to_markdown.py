@@ -1,3 +1,4 @@
+import builtins
 import os
 import textwrap
 from concurrent.futures import ThreadPoolExecutor
@@ -25,8 +26,15 @@ def to_markdown(html, *, ignore_links: bool = True) -> str:
 def remove_website_top_junk(markdown, first_real_article_line):
     markdown_lines = markdown.splitlines()
     first_real_article_line_index = next(
-        i for i, line in enumerate(markdown_lines) if line.startswith(first_real_article_line)
+        (i for i, line in enumerate(markdown_lines) if line.startswith(first_real_article_line)), None
     )
+    if first_real_article_line_index is None:
+        first_real_article_line_index = next(
+            (i for i, line in enumerate(markdown_lines) if first_real_article_line in line), None
+        )
+    if first_real_article_line_index is None:
+        hasattr(builtins, "live") and builtins.live.stop()
+        breakpoint()
     clean_markdown = "\n".join(markdown_lines[first_real_article_line_index:])
     return clean_markdown
 
@@ -34,8 +42,15 @@ def remove_website_top_junk(markdown, first_real_article_line):
 def remove_website_bottom_junk(markdown, last_real_article_line):
     markdown_lines = markdown.splitlines()
     last_real_article_line_index = next(
-        i for i, line in enumerate(reversed(markdown_lines)) if line.startswith(last_real_article_line)
+        (i for i, line in enumerate(reversed(markdown_lines)) if line.startswith(last_real_article_line)), None
     )
+    if last_real_article_line_index is None:
+        last_real_article_line_index = next(
+            (i for i, line in enumerate(reversed(markdown_lines)) if last_real_article_line in line), None
+        )
+    if last_real_article_line_index is None:
+        hasattr(builtins, "live") and builtins.live.stop()
+        breakpoint()
     clean_markdown = "\n".join(markdown_lines[:-last_real_article_line_index])
     return clean_markdown
 

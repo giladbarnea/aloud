@@ -1,4 +1,5 @@
 import tempfile
+import builtins
 import textwrap
 from collections.abc import Generator
 from pathlib import Path
@@ -33,6 +34,7 @@ def to_speakable(thing: str | Path, output_dir: str | Path = None) -> Generator[
         thing = Path(thing).read_text()
     if (url := str(thing)).startswith("http"):
         with console.status("Fetching HTML of article...", spinner="aesthetic", refresh_per_second=10) as live:
+            builtins.live = live
             html = fetch_html(url, remove_head=True)
     else:
         html = thing
@@ -43,6 +45,7 @@ def to_speakable(thing: str | Path, output_dir: str | Path = None) -> Generator[
     console.print("\n[b green]Wrote HTML to", html_path.name)
     html_path.write_text(html)
     with console.status("Converting to markdown...", spinner="aesthetic", refresh_per_second=10) as live:
+        builtins.live = live
         markdown = to_markdown(html)
     markdown_path = output_dir / f"{output_dir.name}.md"
     markdown_path.write_text(markdown)
@@ -73,6 +76,7 @@ def to_speakable(thing: str | Path, output_dir: str | Path = None) -> Generator[
     with console.status(
         f"Converting markdown to speakable with {model}...", spinner="aesthetic", refresh_per_second=10
     ) as live:
+        builtins.live = live
         start_color = (125, 125, 125)
         end_color = (255, 255, 255)
         for stream_chunk in oai.chat.completions.create(
