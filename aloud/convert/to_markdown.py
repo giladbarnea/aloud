@@ -47,8 +47,8 @@ def get_first_real_article_line(markdown: str) -> str:
 def get_last_real_article_line(markdown: str) -> str:
     prompt = textwrap.dedent("""
     You are given a markdown representation of an article from the internet, generated automatically by a tool. This means that the markdown is not perfect.
-    Often, towards the bottom of the markdown, the actual article content would end, and after that, things that used to be the website's comment section, social media links, etc would appear.
-    Find the line where the real article ends, and return exactly that line, and only it, without explanation or anything else.
+    Often, towards the bottom of the markdown, the actual article content would end, and after that, things that used to be the website's comment section, social media links, navigation elemements, etc would appear. Those elements are called "junk elements".
+    Find the line where the first "junk element" appears, and return exactly that line, and only it, without explanation or anything else.
 
     The article's markdown representation is:
     ```md
