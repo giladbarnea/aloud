@@ -3,6 +3,8 @@ import string
 from pathlib import Path
 from string import punctuation
 
+from rich import get_console
+
 
 def is_url(thing) -> bool:
     return str(thing).startswith("http")
@@ -33,3 +35,15 @@ def is_empty_dir(path: Path) -> bool:
 
 def random_string(length: int) -> str:
     return "".join(random.choices(string.ascii_lowercase, k=length))
+
+
+def print_diff(string_1, string_2) -> None:
+    import os
+
+    string_1_path = Path(f"/tmp/{random_string(4)}")
+    string_2_path = Path(f"/tmp/{random_string(4)}")
+
+    string_1_path.write_text(string_1)
+    string_2_path.write_text(string_2)
+
+    os.system(f"delta --side-by-side --paging never --width={get_console().width} {string_1_path} {string_2_path}")

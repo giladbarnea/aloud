@@ -32,7 +32,7 @@ poethepoet = "^0.24.4"
 
 [tool.poetry.scripts]
 aloud = 'aloud.main:main'
-#aloud = 'aloud:main'
+
 
 [tool.black]
 line-length = 120
@@ -46,7 +46,7 @@ profile = "black"
 envfile = ".env"
 
 [tool.poe.tasks]
-test = { cmd = "pytest" }
+test = { cmd = "pytest", env = { COLUMNS = "160" } }
 lint = { shell = "black . && isort . " }
 
 [tool.pytest.ini_options]

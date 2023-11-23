@@ -1,5 +1,6 @@
 import builtins
 import os
+import re
 import textwrap
 from concurrent.futures import ThreadPoolExecutor
 
@@ -15,6 +16,8 @@ def to_markdown(html: str, *, ignore_links: bool = True) -> str:
     md_converter = html2text.HTML2Text(bodywidth=int(os.environ.get("COLUMNS", 0)))
     md_converter.ignore_links = ignore_links
     markdown = md_converter.handle(html)
+    markdown = re.sub(r"\n\n\n+", "\n\n", markdown)
+    markdown = re.sub(r"  +", " ", markdown)
     with ThreadPoolExecutor(max_workers=2) as executor:
         first_real_article_line_future = executor.submit(get_first_real_article_line, markdown)
         last_real_article_line_future = executor.submit(get_last_real_article_line, markdown)
@@ -24,7 +27,7 @@ def to_markdown(html: str, *, ignore_links: bool = True) -> str:
     console.log(f"last_real_article_line:\n{last_real_article_line!r}")
     clean_markdown = remove_website_top_junk(markdown, first_real_article_line)
     clean_markdown = remove_website_bottom_junk(clean_markdown, last_real_article_line)
-    return clean_markdown
+    return clean_markdown.strip()
 
 
 def get_first_real_article_line(markdown: str) -> str:
@@ -88,11 +91,14 @@ def remove_website_bottom_junk(markdown: str, last_real_article_line: str) -> st
     markdown_lines = markdown.splitlines()
     reversed_markdown_lines = list(reversed(markdown_lines))
     last_real_article_line_index = index_of(reversed_markdown_lines, last_real_article_line)
-    clean_markdown = "\n".join(markdown_lines[:-last_real_article_line_index])
+    clean_markdown = "\n".join(markdown_lines[: -last_real_article_line_index - 1])
     return clean_markdown
 
 
 def index_of(string_lines: list[str], substring: str, *, case_sensitive=True) -> int:
+    lines_equal_to_substring = [line for line in string_lines if line == substring]
+    if lines_equal_to_substring:
+        return string_lines.index(lines_equal_to_substring[0])
     lines_starting_with_substring = [line for line in string_lines if line.startswith(substring)]
     if lines_starting_with_substring:
         return string_lines.index(lines_starting_with_substring[0])
