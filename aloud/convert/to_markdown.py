@@ -9,7 +9,7 @@ from openai import OpenAI
 module_cache = {}
 
 
-def to_markdown(html, *, ignore_links: bool = True) -> str:
+def to_markdown(html: str, *, ignore_links: bool = True) -> str:
     md_converter = html2text.HTML2Text(bodywidth=int(os.environ.get("COLUMNS", 0)))
     md_converter.ignore_links = ignore_links
     markdown = md_converter.handle(html)
@@ -23,44 +23,12 @@ def to_markdown(html, *, ignore_links: bool = True) -> str:
     return clean_markdown
 
 
-def remove_website_top_junk(markdown, first_real_article_line):
-    markdown_lines = markdown.splitlines()
-    first_real_article_line_index = next(
-        (i for i, line in enumerate(markdown_lines) if line.startswith(first_real_article_line)), None
-    )
-    if first_real_article_line_index is None:
-        first_real_article_line_index = next(
-            (i for i, line in enumerate(markdown_lines) if first_real_article_line in line), None
-        )
-    if first_real_article_line_index is None:
-        hasattr(builtins, "live") and builtins.live.stop()
-        breakpoint()
-    clean_markdown = "\n".join(markdown_lines[first_real_article_line_index:])
-    return clean_markdown
-
-
-def remove_website_bottom_junk(markdown, last_real_article_line):
-    markdown_lines = markdown.splitlines()
-    last_real_article_line_index = next(
-        (i for i, line in enumerate(reversed(markdown_lines)) if line.startswith(last_real_article_line)), None
-    )
-    if last_real_article_line_index is None:
-        last_real_article_line_index = next(
-            (i for i, line in enumerate(reversed(markdown_lines)) if last_real_article_line in line), None
-        )
-    if last_real_article_line_index is None:
-        hasattr(builtins, "live") and builtins.live.stop()
-        breakpoint()
-    clean_markdown = "\n".join(markdown_lines[:-last_real_article_line_index])
-    return clean_markdown
-
-
-def get_first_real_article_line(markdown):
+def get_first_real_article_line(markdown: str) -> str:
     prompt = textwrap.dedent("""
     You are given a markdown representation of an article from the internet, generated automatically by a tool. This means that the markdown is not perfect.
     Often, the markdown will start with things that used to be the website's navigation bar, social media links, etc, and only after that will the actual article start, usually with a title.
     Find the line where the real article starts, and return exactly that line, and only it, without explanation or anything else.
-    
+
     The article's markdown representation is:
     ```md
     {markdown}
@@ -76,7 +44,7 @@ def get_first_real_article_line(markdown):
     return first_real_article_line
 
 
-def get_last_real_article_line(markdown):
+def get_last_real_article_line(markdown: str) -> str:
     prompt = textwrap.dedent("""
     You are given a markdown representation of an article from the internet, generated automatically by a tool. This means that the markdown is not perfect.
     Often, towards the bottom of the markdown, the actual article content would end, and after that, things that used to be the website's comment section, social media links, etc would appear.
@@ -95,3 +63,31 @@ def get_last_real_article_line(markdown):
     )
     last_real_article_line = chat_completion.choices[0].message.content.splitlines()[0]
     return last_real_article_line
+
+
+def remove_website_top_junk(markdown: str, first_real_article_line: str) -> str:
+    markdown_lines = markdown.splitlines()
+    first_real_article_line_index = index_of(markdown_lines, first_real_article_line)
+    clean_markdown = "\n".join(markdown_lines[first_real_article_line_index:])
+    return clean_markdown
+
+
+def remove_website_bottom_junk(markdown: str, last_real_article_line: str) -> str:
+    markdown_lines = markdown.splitlines()
+    reversed_markdown_lines = list(reversed(markdown_lines))
+    last_real_article_line_index = index_of(reversed_markdown_lines, last_real_article_line)
+    clean_markdown = "\n".join(markdown_lines[:-last_real_article_line_index])
+    return clean_markdown
+
+
+def index_of(string_lines: list[str], substring: str, *, case_sensitive=True) -> int:
+    lines_starting_with_substring = [line for line in string_lines if line.startswith(substring)]
+    if lines_starting_with_substring:
+        return string_lines.index(lines_starting_with_substring[0])
+    lines_containing_substring = [line for line in string_lines if substring in line]
+    if lines_containing_substring:
+        return string_lines.index(lines_containing_substring[0])
+    if case_sensitive:
+        return index_of([line.lower() for line in string_lines], substring.lower(), case_sensitive=False)
+    hasattr(builtins, "live") and builtins.live.stop()
+    breakpoint()

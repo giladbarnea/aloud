@@ -1,13 +1,18 @@
 import builtins
-import random
 from concurrent.futures import ThreadPoolExecutor
-from typing import Literal
 
 from openai import OpenAI
 from rich import get_console
 
+from aloud import models
 
-def to_audio(speakable: str) -> bytes:
+
+def to_audio(
+    speakable: str,
+    voice: models.Voice = models.Voice.default,
+    voice_model: models.VoiceModel = models.VoiceModel.default,
+    voice_response_format: models.VoiceResponseFormat = models.VoiceResponseFormat.default,
+) -> bytes:
     console = get_console()
     chunk_size = 4000  # 4096 is the max, but we need to leave some space for the joined newlines
     article_chunks = [speakable[i : i + chunk_size] for i in range(0, len(speakable), chunk_size)]
@@ -16,8 +21,9 @@ def to_audio(speakable: str) -> bytes:
     ) as live:
         builtins.live = live
         with ThreadPoolExecutor() as executor:
+            # noinspection PyTypeChecker
             futures = [
-                executor.submit(chunk_to_audio, input=article_chunk, model="tts-1", response_format="mp3")
+                executor.submit(chunk_to_audio, article_chunk, voice, voice_model, voice_response_format)
                 for article_chunk in article_chunks
             ]
         audios = [future.result() for future in futures]
@@ -29,11 +35,11 @@ def to_audio(speakable: str) -> bytes:
 
 def chunk_to_audio(
     input: str,
-    model: Literal["tts-1", "tts-1-hd"] = "tts-1",
-    voice: Literal["alloy", "echo", "fable", "onyx", "nova", "shimmer"] = None,
-    response_format: Literal["mp3", "opus", "aac", "flac"] = "mp3",
+    voice: models.Voice = models.Voice.default,
+    voice_model: models.VoiceModel = models.VoiceModel.default,
+    voice_response_format: models.VoiceResponseFormat = models.VoiceResponseFormat.default,
 ) -> bytes:
-    if not voice:
-        voice = random.choice(["alloy", "echo", "fable", "onyx", "nova", "shimmer"])
     oai = OpenAI()
-    return oai.audio.speech.create(input=input, model=model, voice=voice, response_format=response_format).content
+    return oai.audio.speech.create(
+        input=input, model=voice_model, voice=voice, response_format=voice_response_format
+    ).content
