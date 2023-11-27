@@ -19,13 +19,13 @@ def process(
     voice_response_format: models.VoiceResponseFormatOption = models.VoiceResponseFormatOption.default,
     output_dir: models.OutputDir = models.OutputDir.default,
     openai_api_key: models.OpenAIKey = None,
-):
+) -> bytes:
     assert_args_ok(only_audio, only_speakable, output_dir)
     output_dir = prepare_output_dir(thing, output_dir)
     if only_audio:
         return process_audio(voice, voice_model, voice_response_format, output_dir)
     if only_speakable:
-        return "".join(convert.to_speakable(thing, output_dir))
+        return "".join(convert.to_speakable(thing, output_dir)).encode()
     speakable: str = "".join(convert.to_speakable(thing, output_dir))
     return process_audio(speakable, voice, voice_model, voice_response_format, output_dir)
 
@@ -41,7 +41,8 @@ def process_audio(voice, voice_model, voice_response_format, output_dir: Path) -
 
 
 @dispatch
-def process_audio(speakable: str, voice, voice_model, voice_response_format, output_dir: Path) -> bytes:
+def process_audio(speakable: str | bytes, voice, voice_model, voice_response_format, output_dir: Path) -> bytes:
+    speakable = speakable.decode() if isinstance(speakable, bytes) else speakable
     audio = convert.to_audio(
         speakable, voice=voice, voice_model=voice_model, voice_response_format=voice_response_format
     )

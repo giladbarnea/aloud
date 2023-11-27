@@ -22,9 +22,7 @@ def to_markdown(html: str, *, ignore_links: bool = True) -> str:
         first_real_article_line_future = executor.submit(get_first_real_article_line, markdown)
         last_real_article_line_future = executor.submit(get_last_real_article_line, markdown)
     first_real_article_line = first_real_article_line_future.result()
-    console.log(f"first_real_article_line:\n{first_real_article_line!r}")
     last_real_article_line = last_real_article_line_future.result()
-    console.log(f"last_real_article_line:\n{last_real_article_line!r}")
     clean_markdown = remove_website_top_junk(markdown, first_real_article_line)
     clean_markdown = remove_website_bottom_junk(clean_markdown, last_real_article_line)
     return clean_markdown.strip()
@@ -83,6 +81,7 @@ def get_last_real_article_line(markdown: str) -> str:
 def remove_website_top_junk(markdown: str, first_real_article_line: str) -> str:
     markdown_lines = markdown.splitlines()
     first_real_article_line_index = index_of(markdown_lines, first_real_article_line)
+    console.log(f"first_real_article_line (idx {first_real_article_line_index}):\n{first_real_article_line!r}")
     clean_markdown = "\n".join(markdown_lines[first_real_article_line_index:])
     return clean_markdown
 
@@ -91,6 +90,7 @@ def remove_website_bottom_junk(markdown: str, last_real_article_line: str) -> st
     markdown_lines = markdown.splitlines()
     reversed_markdown_lines = list(reversed(markdown_lines))
     last_real_article_line_index = index_of(reversed_markdown_lines, last_real_article_line)
+    console.log(f"last_real_article_line (idx {last_real_article_line_index}):\n{last_real_article_line!r}")
     clean_markdown = "\n".join(markdown_lines[: -last_real_article_line_index - 1])
     return clean_markdown
 
