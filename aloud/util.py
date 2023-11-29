@@ -47,3 +47,17 @@ def print_diff(string_1, string_2) -> None:
     string_2_path.write_text(string_2)
 
     os.system(f"delta --side-by-side --paging never --width={get_console().width} {string_1_path} {string_2_path}")
+
+
+def strip_surrounding_punctuation(string: str) -> str:
+    """
+    >>> strip_surrounding_punctuation('!#hello!world!')
+    'hello!world'
+    """
+    first_alpha_char_index = 0
+    while first_alpha_char_index < len(string) and not string[first_alpha_char_index].isalpha():
+        first_alpha_char_index += 1
+    last_alpha_char_index = len(string) - 1
+    while last_alpha_char_index >= 0 and not string[last_alpha_char_index].isalpha():
+        last_alpha_char_index -= 1
+    return string[first_alpha_char_index : last_alpha_char_index + 1]

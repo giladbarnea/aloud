@@ -20,7 +20,7 @@ def set_env(envvar: str):
 
 @set_env("OPENAI_API_KEY")
 def get_openai_api_key(value):
-    if util.is_file(value):
+    if value and util.is_file(value):
         return Path(value).expanduser().read_text().strip()
     if value:
         return value

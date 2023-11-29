@@ -22,10 +22,10 @@ def process(
 ) -> bytes:
     assert_args_ok(only_audio, only_speakable, output_dir)
     output_dir = prepare_output_dir(thing, output_dir)
-    if only_audio:
-        return process_audio(voice, voice_model, voice_response_format, output_dir)
     if only_speakable:
         return "".join(convert.to_speakable(thing, output_dir)).encode()
+    if only_audio:
+        return process_audio(voice, voice_model, voice_response_format, output_dir)
     speakable: str = "".join(convert.to_speakable(thing, output_dir))
     return process_audio(speakable, voice, voice_model, voice_response_format, output_dir)
 

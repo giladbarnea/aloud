@@ -1,5 +1,4 @@
 import builtins
-import os
 import re
 import textwrap
 from concurrent.futures import ThreadPoolExecutor
@@ -12,12 +11,18 @@ console = get_console()
 module_cache = {}
 
 
-def to_markdown(html: str, *, ignore_links: bool = True) -> str:
-    md_converter = html2text.HTML2Text(bodywidth=int(os.environ.get("COLUMNS", 0)))
+def convert_to_raw_markdown(html: str, *, ignore_links: bool = True) -> str:
+    md_converter = html2text.HTML2Text(bodywidth=0)
     md_converter.ignore_links = ignore_links
-    markdown = md_converter.handle(html)
+    markdown = md_converter.handle(html).strip()
     markdown = re.sub(r"\n\n\n+", "\n\n", markdown)
     markdown = re.sub(r"  +", " ", markdown)
+    markdown = "\n".join(line.strip() for line in markdown.splitlines())
+    return markdown
+
+
+def to_markdown(html: str, *, ignore_links: bool = True) -> str:
+    markdown = convert_to_raw_markdown(html, ignore_links=ignore_links)
     with ThreadPoolExecutor(max_workers=2) as executor:
         first_real_article_line_future = executor.submit(get_first_real_article_line, markdown)
         last_real_article_line_future = executor.submit(get_last_real_article_line, markdown)
@@ -56,14 +61,15 @@ def get_first_real_article_line(markdown: str) -> str:
 def get_last_real_article_line(markdown: str) -> str:
     prompt = textwrap.dedent("""
     You are given a markdown representation of an article from the internet, generated automatically by a tool. This means that the markdown is not perfect.
-    Often, towards the bottom of the markdown, the actual article content would end, and after that, things that used to be the website's comment section, social media links, navigation elements and buttons would appear. Those elements are called "junk elements".
-    Find the first line where the "junk elements" appear, and return exactly that line, and only it, without explanation or anything else.
+    Often, at the bottom of the article, the article's real actual content would end, and after that, things that used to be the website's comment section, social media links, navigation elements and buttons would appear. Those elements are called "junk elements".
+    Find the last line of the real content, just before where the "junk elements" appear, and return exactly that last real content line, and only it, without explanation.
+    If the article does not contain "junk elements", your instruction stays the same: return the last line.
 
-    The article's markdown representation is:
+    The article's markdown representation is, enclosed in triple backticks:
     ```md
     {markdown}
     ```
-    """).format(markdown=markdown).strip()
+    """).format(markdown=markdown.strip()).strip()
     if not (oai := module_cache.get("oai")):
         oai = OpenAI()
         module_cache["oai"] = oai
@@ -91,7 +97,9 @@ def remove_website_bottom_junk(markdown: str, last_real_article_line: str) -> st
     reversed_markdown_lines = list(reversed(markdown_lines))
     last_real_article_line_index = index_of(reversed_markdown_lines, last_real_article_line)
     console.log(f"last_real_article_line (idx {last_real_article_line_index}):\n{last_real_article_line!r}")
-    clean_markdown = "\n".join(markdown_lines[: -last_real_article_line_index - 1])
+    if last_real_article_line_index == 0:
+        return markdown
+    clean_markdown = "\n".join(markdown_lines[:-last_real_article_line_index])
     return clean_markdown
 
 
