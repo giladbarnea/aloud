@@ -663,7 +663,7 @@ c = get_config()  # noqa
 ## The name or class of a Pygments style to use for syntax
 #          highlighting. To see available styles, run `pygmentize -L styles`.
 #  Default: traitlets.Undefined
-c.TerminalInteractiveShell.highlighting_style = "monokai"  # dracula, one-dark, material
+c.TerminalInteractiveShell.highlighting_style = 'monokai'  # dracula, one-dark, material
 
 ## Override highlighting format for specific tokens
 #  Default: {}

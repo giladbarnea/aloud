@@ -9,22 +9,22 @@ def pytest_sessionstart(session: pytest.Session):
     import dotenv
 
     dotenv.load_dotenv()
-    os.environ.setdefault("COLUMNS", "160")
-    os.environ.update(FORCE_COLOR="true")
+    os.environ.setdefault('COLUMNS', '160')
+    os.environ.update(FORCE_COLOR='true')
 
 
-@fixture(scope="session")
+@fixture(scope='session')
 def to_html():
     return convert.to_html
 
 
-@fixture(scope="session")
+@fixture(scope='session')
 def get_markdown():
     return get_markdown_fixture
 
 
 def get_markdown_fixture(url_or_html, *, remove_head: bool = True, ignore_links=True) -> str:
-    if url_or_html.startswith("http"):
+    if url_or_html.startswith('http'):
         url = url_or_html
         html = convert.to_html(url, remove_head=remove_head)
     else:
