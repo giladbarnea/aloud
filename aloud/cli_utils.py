@@ -51,25 +51,47 @@ def infer_subdir_from_thing(thing: str | Path) -> str | None:
     return None
 
 
+def ensure_dir_exists(returns_path: Callable[..., Path]) -> Callable[..., Path]:
+    def wrapper(*args, **kwargs) -> Path:
+        path = returns_path(*args, **kwargs)
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    return wrapper
+
+
+@ensure_dir_exists
 def prepare_output_dir(thing: str | Path | None, output_dir: str | Path | None) -> Path:
+    random_string = util.random_string(4)
+    inferred_subdir = infer_subdir_from_thing(thing)
+    if output_dir:
+        output_dir = Path(output_dir)
+        if output_dir.is_file():
+            raise typer.BadParameter(f'{output_dir} is a file. --output-dir must be a directory (or omitted)')
+        if output_dir.exists():
+            if util.is_empty_dir(output_dir):
+                if thing:
+                    if inferred_subdir:
+                        return output_dir / inferred_subdir
+                    return output_dir
+                return output_dir
+            if thing:
+                if inferred_subdir:
+                    return output_dir / inferred_subdir
+                return output_dir / random_string
+            return output_dir / random_string
+        if thing:
+            if inferred_subdir:
+                return output_dir / inferred_subdir
+            return output_dir / random_string
+        return output_dir
+    if thing:
+        if inferred_subdir:
+            return Path.cwd() / inferred_subdir
+        return Path.cwd() / random_string
     from aloud.models import default_output_dir
 
-    random_string = util.random_string(4)
-    default_output_subdir = Path(default_output_dir) / random_string
-    if output_dir:
-        if not util.is_empty_dir(output_dir):
-            if thing:
-                output_dir = Path(output_dir) / (infer_subdir_from_thing(thing) or random_string)
-            else:
-                output_dir = default_output_subdir
-    else:
-        if thing:
-            output_dir = infer_subdir_from_thing(thing) or default_output_subdir
-        else:
-            output_dir = default_output_subdir
-    output_dir = Path(output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
-    return output_dir
+    return default_output_dir / random_string
 
 
 def assert_args_ok(only_audio: bool, only_speakable: bool, output_dir: str | Path = None):

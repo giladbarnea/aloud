@@ -72,5 +72,5 @@ OpenAIKey = Annotated[
     typer.Option('-k', '--openai-api-key', callback=cli_utils.get_openai_api_key, envvar='OPENAI_API_KEY'),
 ]
 
-default_output_dir = '/tmp'
+default_output_dir = Path('/tmp')
 OutputDir = Annotated[Path, typer.Option('-o', '--output-dir'), default_output_dir]

@@ -19,7 +19,9 @@ def is_file(value: str | Path) -> bool:
         return False
 
 
-def is_pathlike(thing: str | Path) -> bool:
+def is_pathlike(thing: str | Path | None) -> bool:
+    if not thing:
+        return False
     str_thing = str(thing)
     if is_url(str_thing):
         return False
@@ -27,7 +29,8 @@ def is_pathlike(thing: str | Path) -> bool:
         return True
     if os.path.sep not in str_thing:
         return False
-    illegal_path_chars = ''.join(set(punctuation) - {'-', '_', '~'})
+    legal_path_chars = {'-', '_', '~'}
+    illegal_path_chars = ''.join(set(punctuation) - legal_path_chars)
     return not any(char in illegal_path_chars for char in str_thing)
 
 

@@ -4,47 +4,94 @@ from aloud import util
 from aloud.cli_utils import prepare_output_dir
 
 
-def test_prepare_output_dir():
-    # None, None
+def test_prepare_output_dir_both_None():
     thing, output_dir = None, None
     result = prepare_output_dir(thing, output_dir)
-    assert result.parent == Path('/tmp')
+    assert result.parent.samefile('/tmp')
     assert len(result.name) == 4
     assert util.is_empty_dir(result)
+    result.rmdir()
 
-    # thing, None
-    thing, output_dir = 'http://www.google.com/foo', None
+
+def test_prepare_output_dir_only_with_thing():
+    output_dir = None
+    thing = 'http://www.google.com/foo'
     result = prepare_output_dir(thing, output_dir)
-    assert result.resolve() == (Path.cwd() / 'foo').resolve()
+    assert result.samefile(Path.cwd() / 'foo')
     assert util.is_empty_dir(result)
+    result.rmdir()
 
-    thing, output_dir = 'www.google.com/bar', None
+    thing = 'www.google.com/bar'
     result = prepare_output_dir(thing, output_dir)
-    assert result.resolve() == (Path.cwd() / 'bar').resolve()
+    assert result.samefile(Path.cwd() / 'bar')
     assert util.is_empty_dir(result)
+    result.rmdir()
 
-    thing, output_dir = Path('/tmp'), None
-    result = prepare_output_dir(thing, output_dir).resolve()
-    assert result.parent == Path('/tmp')
+    thing = Path(
+        'tests/data/reshaping-the-tree-rebuilding-organizations/reshaping-the-tree-rebuilding-organizations.html'
+    )
+    result = prepare_output_dir(thing, output_dir)
+    assert result.samefile(Path.cwd() / 'reshaping-the-tree-rebuilding-organizations')
+    assert util.is_empty_dir(result)
+    result.rmdir()
+
+    thing = 'DOES_NOT_EXIST_AND_DOES_NOT_LOOK_LIKE_A_PATH_OR_URL'
+    result = prepare_output_dir(thing, output_dir)
+    assert str(result.resolve()) != str((Path.cwd() / thing).resolve())
     assert len(result.name) == 4
     assert util.is_empty_dir(result)
+    result.rmdir()
+
+
+def test_prepare_output_dir_only_with_output_dir():
+    thing = None
+    output_dir = Path('/tmp')
+    result = prepare_output_dir(thing, output_dir)
+    assert result.parent.samefile('/tmp')
+    assert len(result.name) == 4
+    assert util.is_empty_dir(result)
+    result.rmdir()
 
     random_string = util.random_string(4)
-    thing, output_dir = Path('/tmp') / random_string, None
-    result = prepare_output_dir(thing, output_dir).resolve()
-    assert result == (Path('/tmp') / random_string).resolve()
-    assert util.is_empty_dir(result)
+    output_dir = Path('/tmp') / random_string
+    result = prepare_output_dir(thing, output_dir)
+    assert result.samefile(Path('/tmp') / random_string)
 
-    # None, output_dir
-    thing, output_dir = None, Path('/tmp')
-    result = prepare_output_dir(thing, output_dir).resolve()
-    assert result.parent == Path('/tmp')
+
+def test_prepare_output_dir_with_thing_and_output_dir_and():
+    thing = 'http://www.google.com/foo'
+    output_dir = Path('/tmp')
+    result = prepare_output_dir(thing, output_dir)
+    assert result.samefile(Path('/tmp') / 'foo')
+    assert util.is_empty_dir(result)
+    result.rmdir()
+
+    thing = 'www.google.com/bar'
+    output_dir = Path('/tmp')
+    result = prepare_output_dir(thing, output_dir)
+    assert result.samefile(Path('/tmp') / 'bar')
+    assert util.is_empty_dir(result)
+    result.rmdir()
+
+    thing = 'www.google.com/bar'
+    random_string = util.random_string(4)
+    output_dir = Path('/tmp') / random_string
+    result = prepare_output_dir(thing, output_dir)
+    assert result.samefile(Path('/tmp') / random_string / 'bar')
+    assert util.is_empty_dir(result)
+    result.rmdir()
+
+    thing = Path(
+        'tests/data/reshaping-the-tree-rebuilding-organizations/reshaping-the-tree-rebuilding-organizations.html'
+    )
+    output_dir = Path('/tmp')
+    result = prepare_output_dir(thing, output_dir)
+    assert result.samefile(Path('/tmp') / 'reshaping-the-tree-rebuilding-organizations')
+
+    thing = 'DOES_NOT_EXIST_AND_DOES_NOT_LOOK_LIKE_A_PATH_OR_URL'
+    output_dir = Path('/tmp')
+    result = prepare_output_dir(thing, output_dir)
+    assert str(result.resolve()) != str((Path.cwd() / thing).resolve())
     assert len(result.name) == 4
     assert util.is_empty_dir(result)
-
-    random_string = util.random_string(4)
-    thing, output_dir = None, Path('/tmp') / random_string
-    result = prepare_output_dir(thing, output_dir).resolve()
-    assert result == (Path('/tmp') / random_string).resolve()
-
-    # thing, output_dir
+    result.rmdir()
