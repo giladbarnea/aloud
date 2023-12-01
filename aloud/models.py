@@ -38,7 +38,11 @@ Voice.default = default_voice
 VoiceOption = Annotated[
     str,
     typer.Option(
-        '-v', '--voice', show_default=True, click_type=click.Choice((*voices, 'random')), callback=random_voice
+        '-v',
+        '--voice',
+        show_default=True,
+        click_type=click.Choice((*voices, 'random')),
+        callback=random_voice,
     ),
     default_voice,
 ]
@@ -64,7 +68,8 @@ VoiceResponseFormatOption = Annotated[
 ]
 
 OpenAIKey = Annotated[
-    str, typer.Option('-k', '--openai-api-key', callback=cli_utils.get_openai_api_key, envvar='OPENAI_API_KEY')
+    str,
+    typer.Option('-k', '--openai-api-key', callback=cli_utils.get_openai_api_key, envvar='OPENAI_API_KEY'),
 ]
 
 default_output_dir = '/tmp'

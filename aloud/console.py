@@ -16,7 +16,11 @@ class Status(RichStatus):
 
     # noinspection PyMethodOverriding
     def update(
-        self, status: RenderableType | None = None, *, spinner: str | None = None, speed: float | None = None
+        self,
+        status: RenderableType | None = None,
+        *,
+        spinner: str | None = None,
+        speed: float | None = None,
     ) -> None:
         super().update(status, spinner=spinner, spinner_style=Style(color=Color.from_rgb(0, 0, 0)), speed=speed)
 

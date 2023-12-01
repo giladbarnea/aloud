@@ -46,7 +46,7 @@ def to_speakable(thing: str | Path, output_dir: str | Path) -> Generator[str, No
     if Path(thing).is_file():
         thing = Path(thing).read_text()
     if util.is_url(url := str(thing)):
-        with console.status('Fetching HTML of article...') as live:
+        with console.status('Fetching HTML of article...'):
             html = to_html(url, remove_head=True)
     else:
         html = thing
@@ -97,7 +97,10 @@ def to_speakable(thing: str | Path, output_dir: str | Path) -> Generator[str, No
         start_color = (125, 125, 125)
         end_color = (255, 255, 255)
         for stream_chunk in oai.chat.completions.create(
-            messages=[{'role': 'user', 'content': to_speakable_with_markdown}], model=model, temperature=0, stream=True
+            messages=[{'role': 'user', 'content': to_speakable_with_markdown}],
+            model=model,
+            temperature=0,
+            stream=True,
         ):
             delta = stream_chunk.choices[0].delta.content or ''
             yield delta

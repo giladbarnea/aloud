@@ -39,7 +39,7 @@ def get_openai_api_key(value):
             return api_key_file_path.read_text().strip()
     raise typer.BadParameter(
         'Must specify --openai-api-key, or set OPENAI_API_KEY environment variable, or have a file at'
-        ' ~/.openai-api-token'
+        ' ~/.openai-api-token',
     )
 
 

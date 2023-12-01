@@ -42,7 +42,10 @@ def process_audio(voice, voice_model, voice_response_format, output_dir: Path) -
 def process_audio(speakable: str | bytes, voice, voice_model, voice_response_format, output_dir: Path) -> bytes:
     speakable = speakable.decode() if isinstance(speakable, bytes) else speakable
     audio = convert.to_audio(
-        speakable, voice=voice, voice_model=voice_model, voice_response_format=voice_response_format
+        speakable,
+        voice=voice,
+        voice_model=voice_model,
+        voice_response_format=voice_response_format,
     )
     output_audio_file = output_dir / f'{output_dir.name}.mp3'
     with output_audio_file.open('wb') as audio_path:

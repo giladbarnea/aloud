@@ -47,7 +47,7 @@ def get_first_real_article_line(markdown: str) -> str:
     ```md
     {markdown}
     ```
-    """
+    """,
         )
         .format(markdown=markdown)
         .strip()
@@ -79,7 +79,7 @@ def get_first_post_title_line(markdown: str) -> str:
     ```md
     {markdown}
     ```
-    """
+    """,
         )
         .format(markdown=markdown.strip())
         .strip()
@@ -111,7 +111,7 @@ def get_last_real_article_line(markdown: str) -> str:
     ```md
     {markdown}
     ```
-    """
+    """,
         )
         .format(markdown=markdown.strip())
         .strip()
