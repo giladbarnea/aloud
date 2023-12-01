@@ -7,6 +7,6 @@ def to_html(url: str, *, remove_head: bool = False) -> str:
     if not response.ok:
         response.raise_for_status()
     html = response.text
-    soup = BeautifulSoup(html, "html.parser")
-    remove_head and soup.select_one("head").decompose()
+    soup = BeautifulSoup(html, 'html.parser')
+    remove_head and soup.select_one('head').decompose()
     return soup.prettify()

@@ -39,28 +39,28 @@ from .to_markdown import to_markdown
 # ```
 # """.strip()
 # If you encounter a list, append the sentence just before it with a very short saying, communicating that a list is coming up. The saying should meld very organically with the sentence.
-TO_SPEAKABLE: PromptTemplate = hub.pull("pecan-ai/aloud-to-speakable")
+TO_SPEAKABLE: PromptTemplate = hub.pull('pecan-ai/aloud-to-speakable')
 
 
 def to_speakable(thing: str | Path, output_dir: str | Path) -> Generator[str, None, None]:
     if Path(thing).is_file():
         thing = Path(thing).read_text()
     if util.is_url(url := str(thing)):
-        with console.status("Fetching HTML of article...") as live:
+        with console.status('Fetching HTML of article...') as live:
             html = to_html(url, remove_head=True)
     else:
         html = thing
     output_dir = Path(output_dir)
-    html_path = output_dir / f"{output_dir.name}.html"
-    console.print("\n[b green]Wrote HTML to", html_path.name)
+    html_path = output_dir / f'{output_dir.name}.html'
+    console.print('\n[b green]Wrote HTML to', html_path.name)
     html_path.write_text(html)
-    with console.status("Converting to markdown...") as live:
+    with console.status('Converting to markdown...') as live:
         markdown = to_markdown(html)
-    markdown_path = output_dir / f"{output_dir.name}.md"
+    markdown_path = output_dir / f'{output_dir.name}.md'
     markdown_path.write_text(markdown)
-    console.print("\n[b green]Wrote markdown to", markdown_path.name)
+    console.print('\n[b green]Wrote markdown to', markdown_path.name)
 
-    model = "gpt-4-1106-preview"
+    model = 'gpt-4-1106-preview'
     to_speakable_with_markdown = TO_SPEAKABLE.format(markdown=markdown)
     # prompt = prompts.ChatPromptTemplate.from_messages(
     #     [
@@ -92,14 +92,14 @@ def to_speakable(thing: str | Path, output_dir: str | Path) -> Generator[str, No
     #     verbose=True,
     # )
     oai = OpenAI()
-    speakable = "\n"
-    with console.status(f"Converting markdown to speakable with {model}...") as live:
+    speakable = '\n'
+    with console.status(f'Converting markdown to speakable with {model}...') as live:
         start_color = (125, 125, 125)
         end_color = (255, 255, 255)
         for stream_chunk in oai.chat.completions.create(
-            messages=[{"role": "user", "content": to_speakable_with_markdown}], model=model, temperature=0, stream=True
+            messages=[{'role': 'user', 'content': to_speakable_with_markdown}], model=model, temperature=0, stream=True
         ):
-            delta = stream_chunk.choices[0].delta.content or ""
+            delta = stream_chunk.choices[0].delta.content or ''
             yield delta
             speakable += delta
             speakable_lines = speakable.splitlines()
@@ -108,12 +108,12 @@ def to_speakable(thing: str | Path, output_dir: str | Path) -> Generator[str, No
             for i, line in enumerate(speakable_lines[-num_lines:]):
                 color_rgb = get_gradient_color(start_color, end_color, num_lines - 1, i)
                 color = Color.from_rgb(*color_rgb)
-                display_speakable += Text(f"{line}\n", style=Style(color=color))
+                display_speakable += Text(f'{line}\n', style=Style(color=color))
             live.update(display_speakable)
     console.print(speakable)
-    speakable_text_path = output_dir / f"{output_dir.name}.txt"
+    speakable_text_path = output_dir / f'{output_dir.name}.txt'
     speakable_text_path.write_text(speakable)
-    console.print("\n[b green]Wrote speakable to", speakable_text_path)
+    console.print('\n[b green]Wrote speakable to', speakable_text_path)
 
 
 def get_gradient_color(start_color, end_color, num_steps, step):

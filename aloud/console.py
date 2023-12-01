@@ -26,10 +26,10 @@ class Console(RichConsole):
         self,
         status: RenderableType,
         *,
-        spinner: str = "aesthetic",
-        spinner_style: StyleType = "status.spinner",
+        spinner: str = 'aesthetic',
+        spinner_style: StyleType = 'status.spinner',
         speed: float = 1.0,
-        refresh_per_second: float = 12.5
+        refresh_per_second: float = 12.5,
     ) -> Status:
         status_renderable = Status(
             status,
@@ -43,10 +43,10 @@ class Console(RichConsole):
 
 
 console = Console(
-    color_system="truecolor",
+    color_system='truecolor',
     force_terminal=True,
     force_interactive=True,
     stderr=True,
     tab_size=4,
-    log_time_format="%F %X.%s",  # or "[%T]", see https://docs.python.org/3/library/time.html#time.strftime
+    log_time_format='%F %X.%s',  # or "[%T]", see https://docs.python.org/3/library/time.html#time.strftime
 )

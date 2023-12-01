@@ -7,8 +7,8 @@ import typer
 
 from aloud import util
 
-CliArgValue = ParamSpec("CliArgValue")
-StringReturnValue = TypeVar("StringReturnValue", bound=str)
+CliArgValue = ParamSpec('CliArgValue')
+StringReturnValue = TypeVar('StringReturnValue', bound=str)
 CliArgCallback = Callable[CliArgValue, StringReturnValue]
 
 
@@ -24,28 +24,28 @@ def set_env(envvar: str) -> Callable[[CliArgCallback], CliArgCallback]:
     return decorator
 
 
-@set_env("OPENAI_API_KEY")
+@set_env('OPENAI_API_KEY')
 def get_openai_api_key(value):
     if value and util.is_file(value):
         return Path(value).expanduser().read_text().strip()
     if value:
         return value
-    if os.getenv("OPENAI_API_KEY"):
-        return os.getenv("OPENAI_API_KEY")
-    api_key_dotfile_names = [".openai-api-token-pecan", ".openai-api-token"]
+    if os.getenv('OPENAI_API_KEY'):
+        return os.getenv('OPENAI_API_KEY')
+    api_key_dotfile_names = ['.openai-api-token-pecan', '.openai-api-token']
     for api_key_dotfile_name in api_key_dotfile_names:
         api_key_file_path = Path.home() / api_key_dotfile_name
         if api_key_file_path.exists():
             return api_key_file_path.read_text().strip()
     raise typer.BadParameter(
-        "Must specify --openai-api-key, or set OPENAI_API_KEY environment variable, or have a file at"
-        " ~/.openai-api-token"
+        'Must specify --openai-api-key, or set OPENAI_API_KEY environment variable, or have a file at'
+        ' ~/.openai-api-token'
     )
 
 
 def infer_subdir_from_thing(thing: str) -> str | None:
     if util.is_url(url := str(thing)):
-        return url.split("/")[-1]
+        return url.split('/')[-1]
     if util.is_pathlike(thing):
         return Path(thing).stem
     return None
@@ -74,6 +74,6 @@ def prepare_output_dir(thing: str, output_dir: str | Path) -> Path:
 
 def assert_args_ok(only_audio: bool, only_speakable: bool, output_dir: str | Path = None):
     if only_audio and not output_dir:
-        raise typer.BadParameter("Must specify --output-dir when using --only-audio")
+        raise typer.BadParameter('Must specify --output-dir when using --only-audio')
     if only_audio and only_speakable:
-        raise typer.BadParameter("Cannot specify both --only-audio and --only-speakable")
+        raise typer.BadParameter('Cannot specify both --only-audio and --only-speakable')
