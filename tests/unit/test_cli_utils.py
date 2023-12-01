@@ -1,7 +1,8 @@
 from pathlib import Path
 
-from aloud.cli_utils import prepare_output_dir
 from aloud import util
+from aloud.cli_utils import prepare_output_dir
+
 
 def test_prepare_output_dir():
     # None, None
@@ -12,12 +13,12 @@ def test_prepare_output_dir():
     assert util.is_empty_dir(result)
 
     # thing, None
-    thing, output_dir = "http://www.google.com/foo", None
+    thing, output_dir = 'http://www.google.com/foo', None
     result = prepare_output_dir(thing, output_dir)
     assert result.resolve() == (Path.cwd() / 'foo').resolve()
     assert util.is_empty_dir(result)
 
-    thing, output_dir = "www.google.com/bar", None
+    thing, output_dir = 'www.google.com/bar', None
     result = prepare_output_dir(thing, output_dir)
     assert result.resolve() == (Path.cwd() / 'bar').resolve()
     assert util.is_empty_dir(result)
