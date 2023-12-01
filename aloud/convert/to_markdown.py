@@ -20,10 +20,11 @@ def to_markdown(html: str, *, ignore_links: bool = True, output_dir: Path = None
         first_post_title_line_future = executor.submit(get_first_post_title_line, markdown)
         last_real_article_line_future = executor.submit(get_last_real_article_line, markdown)
     first_real_article_line = first_real_article_line_future.result()
+    first_post_title_line = first_post_title_line_future.result()
     last_real_article_line = last_real_article_line_future.result()
-    clean_markdown = remove_website_top_junk(markdown, first_real_article_line)
-    clean_markdown = remove_website_post_title_junk(markdown, first_real_article_line)
-    clean_markdown = remove_website_bottom_junk(clean_markdown, last_real_article_line)
+    clean_markdown = remove_lines_until(markdown, first_real_article_line)
+    clean_markdown = remove_lines_until(clean_markdown, first_post_title_line)
+    clean_markdown = remove_lines_after(clean_markdown, last_real_article_line)
     clean_markdown = clean_markdown.strip()
     if output_dir:
         markdown_path = output_dir / f'{output_dir.name}.md'
@@ -137,22 +138,22 @@ def get_last_real_article_line(markdown: str) -> str:
     return last_real_article_line
 
 
-def remove_website_top_junk(markdown: str, first_real_article_line: str) -> str:
+def remove_lines_until(markdown: str, line: str) -> str:
     markdown_lines = markdown.splitlines()
-    first_real_article_line_index = index_of(markdown_lines, first_real_article_line)
-    console.log(f'first_real_article_line (idx {first_real_article_line_index}):\n{first_real_article_line!r}')
-    clean_markdown = '\n'.join(markdown_lines[first_real_article_line_index:])
+    line_index = index_of(markdown_lines, line)
+    console.log(f'line (idx {line_index}):\n{line!r}')
+    clean_markdown = '\n'.join(markdown_lines[line_index:])
     return clean_markdown
 
 
-def remove_website_bottom_junk(markdown: str, last_real_article_line: str) -> str:
+def remove_lines_after(markdown: str, line: str) -> str:
     markdown_lines = markdown.splitlines()
     reversed_markdown_lines = list(reversed(markdown_lines))
-    last_real_article_line_index = index_of(reversed_markdown_lines, last_real_article_line)
-    console.log(f'last_real_article_line (idx {last_real_article_line_index}):\n{last_real_article_line!r}')
-    if last_real_article_line_index == 0:
+    line_reverse_index = index_of(reversed_markdown_lines, line)
+    console.log(f'line (idx -{line_reverse_index}):\n{line!r}')
+    if line_reverse_index == 0:
         return markdown
-    clean_markdown = '\n'.join(markdown_lines[:-last_real_article_line_index])
+    clean_markdown = '\n'.join(markdown_lines[:-line_reverse_index])
     return clean_markdown
 
 
