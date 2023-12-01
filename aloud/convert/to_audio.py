@@ -14,7 +14,7 @@ def to_audio(
 ) -> bytes:
     chunk_size = 4000  # 4096 is the max, but we need to leave some space for the joined newlines
     article_chunks = [speakable[i : i + chunk_size] for i in range(0, len(speakable), chunk_size)]
-    with console.status(f"Converting speakable to audio with alloy@tts-1...") as live:
+    with console.status(f"Converting speakable to audio with alloy@tts-1..."):
         with ThreadPoolExecutor() as executor:
             # noinspection PyTypeChecker
             futures = [

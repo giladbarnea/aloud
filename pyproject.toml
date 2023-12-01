@@ -66,6 +66,27 @@ addopts = """
 """
 filterwarnings = ["default:invalid escape sequence:DeprecationWarning"]
 
+[tool.ruff]
+line-length = 120
+indent-width = 4
+target-version = "py311"
+builtins = ["live"]
+
+[tool.ruff.lint]
+ignore = ["F541"]
+
+[tool.ruff.format]
+# 5. Use single quotes for non-triple-quoted strings.
+quote-style = "single"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"aloud/main.py" = ["F811"]
+
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

@@ -1,13 +1,8 @@
 from collections.abc import Generator
 from pathlib import Path
-from typing import TypeAlias
 
-import langsmith
-import requests
-from bs4 import BeautifulSoup
-from langchain import chat_models, hub, prompts, smith
+from langchain import hub
 from langchain.prompts import PromptTemplate
-from langchain.schema import output_parser
 from openai import OpenAI
 from rich.color import Color
 from rich.style import Style

@@ -3,7 +3,7 @@ from __future__ import annotations
 import random
 from pathlib import Path
 from typing import Annotated as _Annotated
-from typing import Literal, TypeAlias
+from typing import Literal
 
 import click
 import typer
