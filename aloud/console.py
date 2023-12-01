@@ -45,6 +45,30 @@ class Console(RichConsole):
         )
         return status_renderable
 
+    def with_status(
+        self,
+        status: RenderableType,
+        *,
+        spinner: str = 'aesthetic',
+        spinner_style: StyleType = 'status.spinner',
+        speed: float = 1.0,
+        refresh_per_second: float = 12.5,
+    ) -> Status:
+        def decorator(func):
+            def wrapper(*args, **kwargs):
+                with self.status(
+                    status,
+                    spinner=spinner,
+                    spinner_style=spinner_style,
+                    speed=speed,
+                    refresh_per_second=refresh_per_second,
+                ):
+                    return func(*args, **kwargs)
+
+            return wrapper
+
+        return decorator
+
 
 console = Console(
     color_system='truecolor',

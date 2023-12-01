@@ -2,6 +2,7 @@ import builtins
 import re
 import textwrap
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 
 import html2text
 from openai import OpenAI
@@ -11,17 +12,8 @@ from aloud.console import console
 module_cache = {}
 
 
-def convert_to_raw_markdown(html: str, *, ignore_links: bool = True) -> str:
-    md_converter = html2text.HTML2Text(bodywidth=0)
-    md_converter.ignore_links = ignore_links
-    markdown = md_converter.handle(html).strip()
-    markdown = re.sub(r'\n\n\n+', '\n\n', markdown)
-    markdown = re.sub(r'  +', ' ', markdown)
-    markdown = '\n'.join(line.strip() for line in markdown.splitlines())
-    return markdown
-
-
-def to_markdown(html: str, *, ignore_links: bool = True) -> str:
+@console.with_status('Converting to markdown...')
+def to_markdown(html: str, *, ignore_links: bool = True, output_dir: Path = None) -> str:
     markdown = convert_to_raw_markdown(html, ignore_links=ignore_links)
     with ThreadPoolExecutor(max_workers=2) as executor:
         first_real_article_line_future = executor.submit(get_first_real_article_line, markdown)
@@ -32,7 +24,22 @@ def to_markdown(html: str, *, ignore_links: bool = True) -> str:
     clean_markdown = remove_website_top_junk(markdown, first_real_article_line)
     clean_markdown = remove_website_post_title_junk(markdown, first_real_article_line)
     clean_markdown = remove_website_bottom_junk(clean_markdown, last_real_article_line)
-    return clean_markdown.strip()
+    clean_markdown = clean_markdown.strip()
+    if output_dir:
+        markdown_path = output_dir / f'{output_dir.name}.md'
+        markdown_path.write_text(clean_markdown)
+        console.print('\n[b green]Wrote markdown to', markdown_path.name)
+    return clean_markdown
+
+
+def convert_to_raw_markdown(html: str, *, ignore_links: bool = True) -> str:
+    md_converter = html2text.HTML2Text(bodywidth=0)
+    md_converter.ignore_links = ignore_links
+    markdown = md_converter.handle(html).strip()
+    markdown = re.sub(r'\n\n\n+', '\n\n', markdown)
+    markdown = re.sub(r'  +', ' ', markdown)
+    markdown = '\n'.join(line.strip() for line in markdown.splitlines())
+    return markdown
 
 
 def get_first_real_article_line(markdown: str) -> str:

@@ -8,11 +8,9 @@ from rich.color import Color
 from rich.style import Style
 from rich.text import Text
 
-from aloud import util
 from aloud.console import console
 
-from . import to_html
-from .to_markdown import to_markdown
+from . import to_html, to_markdown
 
 # Prompt: TypeAlias = str
 
@@ -43,22 +41,11 @@ TO_SPEAKABLE: PromptTemplate = hub.pull('pecan-ai/aloud-to-speakable')
 
 
 def to_speakable(thing: str | Path, output_dir: str | Path) -> Generator[str, None, None]:
+    output_dir = Path(output_dir)
     if Path(thing).is_file():
         thing = Path(thing).read_text()
-    if util.is_url(url := str(thing)):
-        with console.status('Fetching HTML of article...'):
-            html = to_html(url, remove_head=True)
-    else:
-        html = thing
-    output_dir = Path(output_dir)
-    html_path = output_dir / f'{output_dir.name}.html'
-    console.print('\n[b green]Wrote HTML to', html_path.name)
-    html_path.write_text(html)
-    with console.status('Converting to markdown...') as live:
-        markdown = to_markdown(html)
-    markdown_path = output_dir / f'{output_dir.name}.md'
-    markdown_path.write_text(markdown)
-    console.print('\n[b green]Wrote markdown to', markdown_path.name)
+    html = to_html(thing, remove_head=True, output_dir=output_dir)
+    markdown = to_markdown(html, output_dir=output_dir)
 
     model = 'gpt-4-1106-preview'
     to_speakable_with_markdown = TO_SPEAKABLE.format(markdown=markdown)
