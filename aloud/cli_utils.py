@@ -43,7 +43,7 @@ def get_openai_api_key(value):
     )
 
 
-def infer_subdir_from_thing(thing: str) -> str | None:
+def infer_subdir_from_thing(thing: str | Path) -> str | None:
     if util.is_url(url := str(thing)):
         return url.split('/')[-1]
     if util.is_pathlike(thing):
@@ -51,7 +51,7 @@ def infer_subdir_from_thing(thing: str) -> str | None:
     return None
 
 
-def prepare_output_dir(thing: str, output_dir: str | Path) -> Path:
+def prepare_output_dir(thing: str | Path | None, output_dir: str | Path | None) -> Path:
     from aloud.models import default_output_dir
 
     random_string = util.random_string(4)

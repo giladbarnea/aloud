@@ -53,7 +53,7 @@ VoiceModel = Literal[voice_models]
 VoiceModel.default = default_voice_model
 VoiceModelOption = Annotated[
     str,
-    typer.Option('--voice-voice_model', show_default=True, click_type=click.Choice(voice_models)),
+    typer.Option('--voice-model', click_type=click.Choice(voice_models)),
     default_voice_model,
 ]
 
@@ -63,7 +63,7 @@ VoiceResponseFormat = Literal[voice_response_formats]
 VoiceResponseFormat.default = default_voice_response_format
 VoiceResponseFormatOption = Annotated[
     str,
-    typer.Option('--voice-response-format', show_default=True, click_type=click.Choice(voice_response_formats)),
+    typer.Option('--voice-response-format', click_type=click.Choice(voice_response_formats)),
     default_voice_response_format,
 ]
 

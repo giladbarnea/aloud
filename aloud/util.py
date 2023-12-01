@@ -1,3 +1,4 @@
+import os.path
 import random
 import string
 from pathlib import Path
@@ -7,7 +8,8 @@ from aloud.console import console
 
 
 def is_url(thing) -> bool:
-    return str(thing).startswith('http')
+    thing_str = str(thing)
+    return thing_str.startswith('http') or thing_str.startswith('www.')
 
 
 def is_file(value: str | Path) -> bool:
@@ -23,7 +25,7 @@ def is_pathlike(thing: str | Path) -> bool:
         return False
     if Path(thing).expanduser().exists():
         return True
-    if '/' not in str_thing:
+    if os.path.sep not in str_thing:
         return False
     illegal_path_chars = ''.join(set(punctuation) - {'-', '_', '~'})
     return not any(char in illegal_path_chars for char in str_thing)

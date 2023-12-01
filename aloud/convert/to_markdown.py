@@ -13,9 +13,9 @@ module_cache = {}
 
 
 @console.with_status('Converting to markdown...')
-def to_markdown(html: str, *, ignore_links: bool = True, output_dir: Path = None) -> str:
-    markdown = convert_to_raw_markdown(html, ignore_links=ignore_links)
-    with ThreadPoolExecutor(max_workers=2) as executor:
+def to_markdown(html: str, *, output_dir: Path = None) -> str:
+    markdown = convert_to_raw_markdown(html)
+    with ThreadPoolExecutor(max_workers=3) as executor:
         first_real_article_line_future = executor.submit(get_first_real_article_line, markdown)
         first_post_title_line_future = executor.submit(get_first_post_title_line, markdown)
         last_real_article_line_future = executor.submit(get_last_real_article_line, markdown)
@@ -33,9 +33,21 @@ def to_markdown(html: str, *, ignore_links: bool = True, output_dir: Path = None
     return clean_markdown
 
 
-def convert_to_raw_markdown(html: str, *, ignore_links: bool = True) -> str:
+def convert_to_raw_markdown(html: str) -> str:
     md_converter = html2text.HTML2Text(bodywidth=0)
-    md_converter.ignore_links = ignore_links
+    # md_converter.ignore_links = ignore_links
+    # md_converter.images_as_html
+    # md_converter.drop_white_space
+    # md_converter.empty_link
+    # md_converter.inline_links
+    # md_converter.links_each_paragraph
+    # md_converter.mark_code
+    # md_converter.maybe_automatic_link
+    # md_converter.protect_links
+    # md_converter.use_automatic_links
+    # md_converter.pad_tables
+    # md_converter.wrap_links
+    # md_converter.wrap_list_items
     markdown = md_converter.handle(html).strip()
     markdown = re.sub(r'\n\n\n+', '\n\n', markdown)
     markdown = re.sub(r'  +', ' ', markdown)
@@ -47,15 +59,15 @@ def get_first_real_article_line(markdown: str) -> str:
     prompt = (
         textwrap.dedent(
             """
-    You are given a markdown representation of an article from the internet, generated automatically by a tool. This means that the markdown is not perfect.
-    Often, the markdown will start with things that used to be the website's navigation bar, social media links, etc, and only after that will the actual article start, usually with a title.
-    Find the line where the real article starts, and return exactly that line, and only it, without explanation or anything else.
-
-    The article's markdown representation is:
-    ```md
-    {markdown}
-    ```
-    """,
+            You are given a markdown representation of an article from the internet, generated automatically by a tool. This means that the markdown is not perfect.
+            Often, the markdown will start with things that used to be the website's navigation bar, social media links, etc, and only after that will the actual article start, usually with a title.
+            Find the line where the real article starts, and return exactly that line, and only it, without explanation or anything else.
+        
+            The article's markdown representation is:
+            ```md
+            {markdown}
+            ```
+            """,
         )
         .format(markdown=markdown)
         .strip()
@@ -78,16 +90,16 @@ def get_first_post_title_line(markdown: str) -> str:
     prompt = (
         textwrap.dedent(
             """
-    You are given a markdown representation of an article from the internet, generated automatically by a tool. This means that the markdown is not perfect.
-    Often, right after the main title of the article, and just before the real actual content woudl start, and after that, things that used to be social media links, buttons and statistics would appear. Those elements are called "junk elements".
-    Find the line where the real article starts, just after the "junk elements", and return exactly that line, and only it, without explanation or anything else.
-    If the article does not contain "junk elements", your instruction stays the same: return the first line.
-
-    The article's markdown representation is, enclosed in triple backticks:
-    ```md
-    {markdown}
-    ```
-    """,
+            You are given a markdown representation of an article from the internet, generated automatically by a tool. This means that the markdown is not perfect.
+            Often, right after the main title of the article, and just before the real actual content woudl start, and after that, things that used to be social media links, buttons and statistics would appear. Those elements are called "junk elements".
+            Find the line where the real article starts, just after the "junk elements", and return exactly that line, and only it, without explanation or anything else.
+            If the article does not contain "junk elements", your instruction stays the same: return the first line.
+        
+            The article's markdown representation is, enclosed in triple backticks:
+            ```md
+            {markdown}
+            ```
+            """,
         )
         .format(markdown=markdown.strip())
         .strip()
@@ -110,16 +122,16 @@ def get_last_real_article_line(markdown: str) -> str:
     prompt = (
         textwrap.dedent(
             """
-    You are given a markdown representation of an article from the internet, generated automatically by a tool. This means that the markdown is not perfect.
-    Often, at the bottom of the article, the article's real actual content would end, and after that, things that used to be the website's comment section, social media links, navigation elements and buttons would appear. Those elements are called "junk elements".
-    Find the last line of the real content, just before where the "junk elements" appear, and return exactly that last real content line, and only it, without explanation.
-    If the article does not contain "junk elements", your instruction stays the same: return the last line.
-
-    The article's markdown representation is, enclosed in triple backticks:
-    ```md
-    {markdown}
-    ```
-    """,
+            You are given a markdown representation of an article from the internet, generated automatically by a tool. This means that the markdown is not perfect.
+            Often, at the bottom of the article, the article's real actual content would end, and after that, things that used to be the website's comment section, social media links, navigation elements and buttons would appear. Those elements are called "junk elements".
+            Find the last line of the real content, just before where the "junk elements" appear, and return exactly that last real content line, and only it, without explanation.
+            If the article does not contain "junk elements", your instruction stays the same: return the last line.
+        
+            The article's markdown representation is, enclosed in triple backticks:
+            ```md
+            {markdown}
+            ```
+            """,
         )
         .format(markdown=markdown.strip())
         .strip()
