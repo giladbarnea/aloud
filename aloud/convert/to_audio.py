@@ -1,10 +1,9 @@
-import builtins
 from concurrent.futures import ThreadPoolExecutor
 
 from openai import OpenAI
-from rich import get_console
 
 from aloud import models
+from aloud.console import console
 
 
 def to_audio(
@@ -13,13 +12,9 @@ def to_audio(
     voice_model: models.VoiceModel = models.VoiceModel.default,
     voice_response_format: models.VoiceResponseFormat = models.VoiceResponseFormat.default,
 ) -> bytes:
-    console = get_console()
     chunk_size = 4000  # 4096 is the max, but we need to leave some space for the joined newlines
     article_chunks = [speakable[i : i + chunk_size] for i in range(0, len(speakable), chunk_size)]
-    with console.status(
-        f"Converting speakable to audio with alloy@tts-1...", spinner="aesthetic", refresh_per_second=10
-    ) as live:
-        builtins.live = live
+    with console.status(f"Converting speakable to audio with alloy@tts-1...") as live:
         with ThreadPoolExecutor() as executor:
             # noinspection PyTypeChecker
             futures = [

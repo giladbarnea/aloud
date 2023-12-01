@@ -5,9 +5,9 @@ from concurrent.futures import ThreadPoolExecutor
 
 import html2text
 from openai import OpenAI
-from rich import get_console
 
-console = get_console()
+from aloud.console import console
+
 module_cache = {}
 
 
@@ -25,10 +25,12 @@ def to_markdown(html: str, *, ignore_links: bool = True) -> str:
     markdown = convert_to_raw_markdown(html, ignore_links=ignore_links)
     with ThreadPoolExecutor(max_workers=2) as executor:
         first_real_article_line_future = executor.submit(get_first_real_article_line, markdown)
+        first_post_title_line_future = executor.submit(get_first_post_title_line, markdown)
         last_real_article_line_future = executor.submit(get_last_real_article_line, markdown)
     first_real_article_line = first_real_article_line_future.result()
     last_real_article_line = last_real_article_line_future.result()
     clean_markdown = remove_website_top_junk(markdown, first_real_article_line)
+    clean_markdown = remove_website_post_title_junk(markdown, first_real_article_line)
     clean_markdown = remove_website_bottom_junk(clean_markdown, last_real_article_line)
     return clean_markdown.strip()
 
@@ -56,6 +58,32 @@ def get_first_real_article_line(markdown: str) -> str:
     )
     first_real_article_line = chat_completion.choices[0].message.content.splitlines()[0]
     return first_real_article_line
+
+
+def get_first_post_title_line(markdown: str) -> str:
+    prompt = textwrap.dedent("""
+    You are given a markdown representation of an article from the internet, generated automatically by a tool. This means that the markdown is not perfect.
+    Often, right after the main title of the article, and just before the real actual content woudl start, and after that, things that used to be social media links, buttons and statistics would appear. Those elements are called "junk elements".
+    Find the line where the real article starts, just after the "junk elements", and return exactly that line, and only it, without explanation or anything else.
+    If the article does not contain "junk elements", your instruction stays the same: return the first line.
+
+    The article's markdown representation is, enclosed in triple backticks:
+    ```md
+    {markdown}
+    ```
+    """).format(markdown=markdown.strip()).strip()
+    if not (oai := module_cache.get("oai")):
+        oai = OpenAI()
+        module_cache["oai"] = oai
+    chat_completion = oai.chat.completions.create(
+        messages=[{"role": "system", "content": prompt}],
+        model="gpt-4-1106-preview",
+        temperature=0,
+        stream=False,
+        timeout=10,
+    )
+    last_real_article_line = chat_completion.choices[0].message.content.splitlines()[0]
+    return last_real_article_line
 
 
 def get_last_real_article_line(markdown: str) -> str:

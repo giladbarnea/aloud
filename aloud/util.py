@@ -3,7 +3,7 @@ import string
 from pathlib import Path
 from string import punctuation
 
-from rich import get_console
+from aloud.console import console
 
 
 def is_url(thing) -> bool:
@@ -46,7 +46,7 @@ def print_diff(string_1, string_2) -> None:
     string_1_path.write_text(string_1)
     string_2_path.write_text(string_2)
 
-    os.system(f"delta --side-by-side --paging never --width={get_console().width} {string_1_path} {string_2_path}")
+    os.system(f"delta --side-by-side --paging never --width={console.width} {string_1_path} {string_2_path}")
 
 
 def strip_surrounding_punctuation(string: str) -> str:

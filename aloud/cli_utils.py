@@ -1,15 +1,21 @@
 import os
+from collections.abc import Callable
 from pathlib import Path
+from typing import ParamSpec, TypeVar
 
 import typer
 
 from aloud import util
 
+CliArgValue = ParamSpec("CliArgValue")
+StringReturnValue = TypeVar("StringReturnValue", bound=str)
+CliArgCallback = Callable[CliArgValue, StringReturnValue]
 
-def set_env(envvar: str):
-    def decorator(func):
-        def wrapper(value: str):
-            return_value = func(value)
+
+def set_env(envvar: str) -> Callable[[CliArgCallback], CliArgCallback]:
+    def decorator(cli_arg_callback: CliArgCallback) -> CliArgCallback:
+        def wrapper(value: CliArgValue) -> StringReturnValue:
+            return_value: StringReturnValue = cli_arg_callback(value)
             os.environ[envvar] = return_value
             return return_value
 

@@ -2,12 +2,10 @@ from pathlib import Path
 
 import typer
 from plum import dispatch
-from rich import get_console
 
 from aloud import convert, models
 from aloud.cli_utils import assert_args_ok, prepare_output_dir
-
-console = get_console()
+from aloud.console import console
 
 
 def process(
