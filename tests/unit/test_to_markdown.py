@@ -20,13 +20,20 @@ def test_langchain_promptlayer():
 
 def test_links_and_images():
     """https://www.oneusefulthing.org/p/reshaping-the-tree-rebuilding-organizations"""
-    html = Path(
-        'tests/data/reshaping-the-tree-rebuilding-organizations/reshaping-the-tree-rebuilding-organizations.html'
-    ).read_text()
-    temp_dir = prepare_output_dir(None, None)
+    thing = 'tests/data/reshaping-the-tree-rebuilding-organizations/reshaping-the-tree-rebuilding-organizations.html'
+    html = Path(thing).read_text()
+    temp_dir = prepare_output_dir(thing, '/tmp')
+    print(temp_dir)
     raw_markdown = convert_to_raw_markdown(html)
     Path(temp_dir / 'raw_markdown.md').write_text(raw_markdown)
     markdown = to_markdown(html)
     Path(temp_dir / 'markdown.md').write_text(markdown)
     print(markdown)
-    print()
+    assert markdown.endswith(
+        'I am not sure who said it first, but there are only two ways to react to exponential change: '
+        'too early or too late. Today’s AIs are flawed and limited in many ways. '
+        'While that restricts what AI can do, the capabilities of AI are increasing exponentially, '
+        'both in terms of the models themselves and the tools these models can use. '
+        'It might seem too early to consider changing an organization to accommodate AI, '
+        'but I think that there is a strong possibility that it will quickly become too late.'
+    )

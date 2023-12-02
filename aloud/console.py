@@ -1,11 +1,15 @@
 import builtins
-from typing import Self
+from collections.abc import Callable
+from typing import ParamSpec, Self, TypeVar
 
 from rich.color import Color
 from rich.console import Console as RichConsole
 from rich.console import RenderableType
 from rich.status import Status as RichStatus
 from rich.style import Style, StyleType
+
+P = ParamSpec('P')
+R = TypeVar('R')
 
 
 class Status(RichStatus):
@@ -53,9 +57,9 @@ class Console(RichConsole):
         spinner_style: StyleType = 'status.spinner',
         speed: float = 1.0,
         refresh_per_second: float = 12.5,
-    ) -> Status:
-        def decorator(func):
-            def wrapper(*args, **kwargs):
+    ) -> Callable[[Callable[P, R]], Callable[P, R]]:
+        def decorator(func: Callable[P, R]) -> Callable[P, R]:
+            def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
                 with self.status(
                     status,
                     spinner=spinner,
