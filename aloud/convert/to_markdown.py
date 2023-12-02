@@ -28,14 +28,14 @@ def to_markdown(html: str, *, output_dir: Path = None) -> str:
         markdown_path = output_dir / f'{output_dir.name}.md'
         markdown_path.write_text(clean_markdown)
         console.print('\n[b green]Wrote markdown to', markdown_path.name)
+    image_links = get_image_links(clean_markdown)
     return clean_markdown
 
 
-def convert_to_raw_markdown(html: str) -> str:
+def convert_to_raw_markdown(html: str, **html2text_kwargs) -> str:
     """https://github.com/Alir3z4/html2text/blob/master/docs/usage.md"""
     md_converter = html2text.HTML2Text(bodywidth=0)
     # md_converter.ignore_links             # Do not include any formatting for links. default False
-    # md_converter.unicode_snob             # Use unicode throughout instead of ASCII. default False
     # md_converter.images_as_html           # always generate HTML tags for images; preserves `height`, `width`, `alt` if possible.
     #  default False.
     # md_converter.drop_white_space
@@ -44,18 +44,18 @@ def convert_to_raw_markdown(html: str) -> str:
     # md_converter.links_each_paragraph     # putting links after every paragraph. default False
     # md_converter.mark_code                # wrap 'pre' blocks with [code]...[/code] tags. default False
     # md_converter.maybe_automatic_link
-    # md_converter.protect_links            # protect from line breaks. default False
     # md_converter.use_automatic_links      # convert <a href='http://xyz'>http://xyz</a> to <http://xyz>. default True
-    # md_converter.pad_tables               # Use padding to make tables look good. default False
     # md_converter.bypass_tables            # format tables in HTML rather than Markdown. default False
     # md_converter.ignore_tables            # ignore table-related tags (table, th, td, tr) while keeping rows. default False
     # md_converter.wrap_links               # links have to be wrapped during text wrapping (implies INLINE_LINKS = False). default False
     # md_converter.wrap_list_items          # list items have to be wrapped during text wrapping. default False
     # md_converter.skip_internal_links      # default True
     # md_converter.single_line_break        # Use a single line break after a block element rather than two. default False
-    md_converter.unicode_snob = True
-    md_converter.protect_links = True
-    md_converter.pad_tables = True
+    md_converter.unicode_snob = True  # Use unicode throughout instead of ASCII. default False
+    md_converter.protect_links = True  # Protect from line breaks. default False
+    md_converter.pad_tables = True  # Use padding to make tables look good. default False
+    for key, value in html2text_kwargs.items():
+        setattr(md_converter, key, value)
     markdown = md_converter.handle(html).strip()
     markdown = re.sub(r'\n\n\n+', '\n\n', markdown)
     markdown = re.sub(r'  +', ' ', markdown)
@@ -149,6 +149,40 @@ def get_last_real_article_line(markdown: str) -> str:
     return last_real_article_line
 
 
+def get_image_links(markdown: str) -> list[str]:
+    prompt = (
+        textwrap.dedent(
+            """
+            You are given a markdown representation of an article from the internet, generated automatically by a tool. This means that the markdown is not perfect.
+            Find all the image links in the article, and return them as a list of strings, each string being a link.
+            The links will later be used as-is to download the images, so mind any "junk" around them, and make sure they are valid links.
+            If the article does not contain any images, return an empty list.
+            Return only the links, without explanation or anything else.
+
+            The article's markdown representation is, enclosed in triple backticks:
+            ```md
+            {markdown}
+            ```
+            """,
+        )
+        .format(markdown=markdown.strip())
+        .strip()
+    )
+    chat_completion = oai.chat.completions.create(
+        messages=[{'role': 'system', 'content': prompt}],
+        model='gpt-4-1106-preview',
+        temperature=0,
+        stream=True,
+        # timeout=30,
+    )
+    text = ''
+    for stream_chunk in chat_completion:
+        text += stream_chunk.choices[0].delta.content or ''
+        console.print(text)
+    # links = chat_completion.choices[0].message.content.splitlines()
+    # return links
+
+
 def remove_lines_until(markdown: str, line: str) -> str:
     markdown_lines = markdown.splitlines()
     line_index = index_of(markdown_lines, line)
@@ -171,6 +205,10 @@ def remove_lines_after(markdown: str, line: str) -> str:
 def index_of(string_lines: list[str], substring: str, *, case_sensitive=True) -> int:
     lines_equal_to_substring = [line for line in string_lines if line == substring]
     if lines_equal_to_substring:
+        if len(lines_equal_to_substring) > 1:
+            console.log(
+                '⚠️ %d lines equal to substring %r' % (len(lines_equal_to_substring), substring), _stack_offset=2
+            )
         return string_lines.index(lines_equal_to_substring[0])
     lines_starting_with_substring = [line for line in string_lines if line.startswith(substring)]
     if lines_starting_with_substring:
@@ -182,3 +220,13 @@ def index_of(string_lines: list[str], substring: str, *, case_sensitive=True) ->
         return index_of([line.lower() for line in string_lines], substring.lower(), case_sensitive=False)
     hasattr(builtins, 'live') and builtins.live.stop()
     breakpoint()
+
+
+def add_line_numbers(markdown: str, *, separator='│') -> str:
+    markdown_lines = markdown.splitlines()
+    digits = len(str(len(markdown_lines)))
+    for i, line in enumerate(markdown_lines):
+        line_number = str(i).rjust(digits)
+        markdown_lines[i] = f'{line_number} {separator} {line}'
+    markdown = '\n'.join(markdown_lines)
+    return markdown

@@ -80,5 +80,5 @@ console = Console(
     force_interactive=True,
     stderr=True,
     tab_size=4,
-    log_time_format='%F %X.%s',  # or "[%T]", see https://docs.python.org/3/library/time.html#time.strftime
+    log_time_format='%F %X',  # or "[%T]", see https://docs.python.org/3/library/time.html#time.strftime
 )
