@@ -30,7 +30,7 @@ def to_markdown(html: str, *, output_dir: Path = None) -> str:
         markdown_path.write_text(clean_markdown)
         console.print('\n[b green]Wrote markdown to', markdown_path.name)
     markdown_with_line_numbers = add_line_numbers(markdown)
-    image_links = get_image_links(markdown_with_line_numbers)
+    image_links = extract_image_links(markdown_with_line_numbers)
     return clean_markdown
 
 
@@ -152,12 +152,13 @@ def get_last_real_article_line(markdown: str) -> str:
     return last_real_article_line
 
 
-def get_image_links(markdown: str) -> list[str]:
+def extract_image_links(markdown: str) -> list[str]:
     image_link_indices = get_image_link_indices(markdown)
     image_link_futures = []
     with ThreadPoolExecutor(max_workers=len(image_link_indices)) as executor:
+        markdown_lines = markdown.splitlines()
         for index in image_link_indices:
-            line = markdown.splitlines()[index]
+            line = markdown_lines[index]
             future = executor.submit(extract_image_link, line)
             image_link_futures.append(future)
     image_links = []
