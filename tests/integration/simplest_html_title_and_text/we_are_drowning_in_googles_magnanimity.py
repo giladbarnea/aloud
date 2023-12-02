@@ -4,12 +4,13 @@ from pathlib import Path
 from openai import OpenAI
 from rich import print
 
+from aloud.openai import oai
+
 ARTICLE_URL = 'https://www.kpassa.me/posts/google'
 
 
 def test_generate_audio(get_markdown):
     markdown = get_markdown(ARTICLE_URL)
-    oai = OpenAI()
     prompt = (
         textwrap.dedent(
             """

@@ -1,9 +1,8 @@
 from concurrent.futures import ThreadPoolExecutor
 
-from openai import OpenAI
-
 from aloud import models
 from aloud.console import console
+from aloud.openai import oai
 
 
 def to_audio(
@@ -28,13 +27,13 @@ def to_audio(
     return audio
 
 
+# noinspection PyShadowingBuiltins
 def chunk_to_audio(
     input: str,
     voice: models.Voice = models.Voice.default,
     voice_model: models.VoiceModel = models.VoiceModel.default,
     voice_response_format: models.VoiceResponseFormat = models.VoiceResponseFormat.default,
 ) -> bytes:
-    oai = OpenAI()
     return oai.audio.speech.create(
         input=input,
         model=voice_model,

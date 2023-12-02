@@ -5,11 +5,9 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import html2text
-from openai import OpenAI
 
 from aloud.console import console
-
-module_cache = {}
+from aloud.openai import oai
 
 
 @console.with_status('Converting to markdown...')
@@ -72,9 +70,6 @@ def get_first_real_article_line(markdown: str) -> str:
         .format(markdown=markdown)
         .strip()
     )
-    if not (oai := module_cache.get('oai')):
-        oai = OpenAI()
-        module_cache['oai'] = oai
     chat_completion = oai.chat.completions.create(
         messages=[{'role': 'system', 'content': prompt}],
         model='gpt-4-1106-preview',
@@ -104,9 +99,6 @@ def get_first_post_title_line(markdown: str) -> str:
         .format(markdown=markdown.strip())
         .strip()
     )
-    if not (oai := module_cache.get('oai')):
-        oai = OpenAI()
-        module_cache['oai'] = oai
     chat_completion = oai.chat.completions.create(
         messages=[{'role': 'system', 'content': prompt}],
         model='gpt-4-1106-preview',
@@ -136,9 +128,6 @@ def get_last_real_article_line(markdown: str) -> str:
         .format(markdown=markdown.strip())
         .strip()
     )
-    if not (oai := module_cache.get('oai')):
-        oai = OpenAI()
-        module_cache['oai'] = oai
     chat_completion = oai.chat.completions.create(
         messages=[{'role': 'system', 'content': prompt}],
         model='gpt-4-1106-preview',

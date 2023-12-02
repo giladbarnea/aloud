@@ -3,13 +3,13 @@ from pathlib import Path
 
 from langchain import hub
 from langchain.prompts import PromptTemplate
-from openai import OpenAI
 from rich.color import Color
 from rich.style import Style
 from rich.text import Text
 
 from aloud.console import console
 
+from ..openai import oai
 from . import to_html, to_markdown
 
 # Prompt: TypeAlias = str
@@ -78,7 +78,6 @@ def to_speakable(thing: str | Path, output_dir: str | Path) -> Generator[str, No
     #     concurrency_level=5,
     #     verbose=True,
     # )
-    oai = OpenAI()
     speakable = '\n'
     with console.status(f'Converting markdown to speakable with {model}...') as live:
         start_color = (125, 125, 125)
