@@ -51,7 +51,7 @@ def current_test_name(request):
 def print_rich_traceback(
     exception: BaseException,
     *args,
-    extra_lines=7,
+    extra_lines=10,
     show_locals=True,
     locals_max_string=1000,
     locals_max_length=1000,

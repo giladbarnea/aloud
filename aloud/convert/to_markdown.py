@@ -3,6 +3,7 @@ import re
 import textwrap
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from urllib.parse import unquote
 
 import html2text
 
@@ -28,7 +29,8 @@ def to_markdown(html: str, *, output_dir: Path = None) -> str:
         markdown_path = output_dir / f'{output_dir.name}.md'
         markdown_path.write_text(clean_markdown)
         console.print('\n[b green]Wrote markdown to', markdown_path.name)
-    image_links = get_image_links(clean_markdown)
+    markdown_with_line_numbers = add_line_numbers(markdown)
+    image_links = get_image_links(markdown_with_line_numbers)
     return clean_markdown
 
 
@@ -36,8 +38,6 @@ def convert_to_raw_markdown(html: str, **html2text_kwargs) -> str:
     """https://github.com/Alir3z4/html2text/blob/master/docs/usage.md"""
     md_converter = html2text.HTML2Text(bodywidth=0)
     # md_converter.ignore_links             # Do not include any formatting for links. default False
-    # md_converter.images_as_html           # always generate HTML tags for images; preserves `height`, `width`, `alt` if possible.
-    #  default False.
     # md_converter.drop_white_space
     # md_converter.empty_link
     # md_converter.inline_links             # for formatting images and links. default True
@@ -51,6 +51,9 @@ def convert_to_raw_markdown(html: str, **html2text_kwargs) -> str:
     # md_converter.wrap_list_items          # list items have to be wrapped during text wrapping. default False
     # md_converter.skip_internal_links      # default True
     # md_converter.single_line_break        # Use a single line break after a block element rather than two. default False
+    md_converter.images_as_html = (
+        True  # always generate HTML tags for images; preserves `height`, `width`, `alt` if possible. default False.
+    )
     md_converter.unicode_snob = True  # Use unicode throughout instead of ASCII. default False
     md_converter.protect_links = True  # Protect from line breaks. default False
     md_converter.pad_tables = True  # Use padding to make tables look good. default False
@@ -71,7 +74,7 @@ def get_first_real_article_line(markdown: str) -> str:
             Often, the markdown will start with things that used to be the website's navigation bar, social media links, etc, and only after that will the actual article start, usually with a title.
             Find the line where the real article starts, and return exactly that line, and only it, without explanation or anything else.
         
-            The article's markdown representation is:
+            The article's markdown representation is, enclosed in triple backticks:
             ```md
             {markdown}
             ```
@@ -100,7 +103,7 @@ def get_first_post_title_line(markdown: str) -> str:
             Find the line where the real article starts, just after the "junk elements", and return exactly that line, and only it, without explanation or anything else.
             If the article does not contain "junk elements", your instruction stays the same: return the first line.
         
-            The article's markdown representation is, enclosed in triple backticks:
+            The article's markdown representation, enclosed in triple backticks:
             ```md
             {markdown}
             ```
@@ -129,7 +132,7 @@ def get_last_real_article_line(markdown: str) -> str:
             Find the last line of the real content, just before where the "junk elements" appear, and return exactly that last real content line, and only it, without explanation.
             If the article does not contain "junk elements", your instruction stays the same: return the last line.
         
-            The article's markdown representation is, enclosed in triple backticks:
+            The article's markdown representation, enclosed in triple backticks:
             ```md
             {markdown}
             ```
@@ -150,19 +153,32 @@ def get_last_real_article_line(markdown: str) -> str:
 
 
 def get_image_links(markdown: str) -> list[str]:
+    image_link_indices = get_image_link_indices(markdown)
+    image_link_futures = []
+    with ThreadPoolExecutor(max_workers=len(image_link_indices)) as executor:
+        for index in image_link_indices:
+            line = markdown.splitlines()[index]
+            future = executor.submit(extract_image_link, line)
+            image_link_futures.append(future)
+    image_links = []
+    for future in image_link_futures:
+        image_link = future.result()
+        image_links.append(image_link)
+    return image_links
+
+
+def get_image_link_indices(markdown: str) -> list[int]:
     prompt = (
         textwrap.dedent(
             """
             You are given a markdown representation of an article from the internet, generated automatically by a tool. This means that the markdown is not perfect.
-            Find all the image links in the article, and return them as a list of strings, each string being a link.
-            The links will later be used as-is to download the images, so mind any "junk" around them, and make sure they are valid links.
-            If the article does not contain any images, return an empty list.
-            Return only the links, without explanation or anything else.
+            Line numbers are shown on the left "gutter" of the markdown; the special vertical line `│` separates each line number from the rest of the line, and the first line is 0.
+            Find all the image links in the article, and return their line numbers as listed in the gutters of the lines where the image links appear, separated by line breaks, and only them, without explanation or anything else.
+            If the article does not contain any images, return: None
 
-            The article's markdown representation is, enclosed in triple backticks:
-            ```md
+            The article's markdown representation:
+            
             {markdown}
-            ```
             """,
         )
         .format(markdown=markdown.strip())
@@ -172,15 +188,52 @@ def get_image_links(markdown: str) -> list[str]:
         messages=[{'role': 'system', 'content': prompt}],
         model='gpt-4-1106-preview',
         temperature=0,
-        stream=True,
-        # timeout=30,
+        stream=False,
+        timeout=10,
     )
-    text = ''
-    for stream_chunk in chat_completion:
-        text += stream_chunk.choices[0].delta.content or ''
-        console.print(text)
-    # links = chat_completion.choices[0].message.content.splitlines()
-    # return links
+    image_link_indices = []
+    for index in chat_completion.choices[0].message.content.splitlines():
+        image_link_indices.append(int(index.strip()))
+    return image_link_indices
+
+
+def extract_image_link(markdown_line: str) -> str:
+    prompt = (
+        textwrap.dedent(
+            """
+            You are given a markdown line which contains an image link.
+            Extract the image link, and return exactly it, without explanation or anything else.
+            Note that sometimes, the domain of the link is that of a CDN, or analytics, or similar, but the actual image link is a parameter of the URL. An oversimplified example of such a link is: https://cdn.irrelevant.com/https://actual-link.com/image.png?width=100&height=100, in which case, you would return: https://actual-link.com/image.png 
+            
+            The markdown line, enclosed in triple backticks:
+            ```md
+            {markdown_line}
+            ```
+            """,
+        )
+        .format(markdown_line=markdown_line.strip())
+        .strip()
+    )
+    chat_completion = oai.chat.completions.create(
+        messages=[{'role': 'system', 'content': prompt}],
+        model='gpt-4-1106-preview',
+        temperature=0,
+        stream=False,
+        timeout=10,
+    )
+    image_link = chat_completion.choices[0].message.content.splitlines()[0].strip()
+    unquoted_image_link = unquote(image_link)
+    return unquoted_image_link
+
+
+def add_line_numbers(markdown: str, *, separator='│') -> str:
+    markdown_lines = markdown.splitlines()
+    digits = len(str(len(markdown_lines)))
+    for i, line in enumerate(markdown_lines):
+        line_number = str(i).rjust(digits)
+        markdown_lines[i] = f'{line_number} {separator} {line}'
+    markdown = '\n'.join(markdown_lines)
+    return markdown
 
 
 def remove_lines_until(markdown: str, line: str) -> str:
@@ -220,13 +273,3 @@ def index_of(string_lines: list[str], substring: str, *, case_sensitive=True) ->
         return index_of([line.lower() for line in string_lines], substring.lower(), case_sensitive=False)
     hasattr(builtins, 'live') and builtins.live.stop()
     breakpoint()
-
-
-def add_line_numbers(markdown: str, *, separator='│') -> str:
-    markdown_lines = markdown.splitlines()
-    digits = len(str(len(markdown_lines)))
-    for i, line in enumerate(markdown_lines):
-        line_number = str(i).rjust(digits)
-        markdown_lines[i] = f'{line_number} {separator} {line}'
-    markdown = '\n'.join(markdown_lines)
-    return markdown
