@@ -12,6 +12,7 @@ from aloud.convert.to_markdown import (
     extract_image_link,
     extract_image_links,
     get_image_link_indices,
+generate_image_description,
 )
 
 p = console.print
@@ -36,10 +37,6 @@ def test_links_and_images():
     (temp_dir / 'html.html').write_text(html)
     raw_markdown = convert_to_raw_markdown(html)
     (temp_dir / 'raw_markdown.md').write_text(raw_markdown)
-    markdown_with_line_numbers = add_line_numbers(raw_markdown)
-    image_links = extract_image_links(markdown_with_line_numbers)
-    console.log('image_links:', image_links)
-    return
     markdown = to_markdown(html)
     (temp_dir / 'markdown.md').write_text(markdown)
     assert markdown.endswith(
@@ -50,6 +47,11 @@ def test_links_and_images():
         'It might seem too early to consider changing an organization to accommodate AI, '
         'but I think that there is a strong possibility that it will quickly become too late.'
     )
+
+def test_generate_image_description():
+    image_url = "https://substack-post-media.s3.amazonaws.com/public/images/98f562a1-ece9-4e31-bafd-363da13fa741_667x571.png"
+    image_description = generate_image_description(image_url)
+    console.print(image_description)
 
 
 def test_extract_image_links():

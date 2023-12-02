@@ -152,6 +152,41 @@ def get_last_real_article_line(markdown: str) -> str:
     return last_real_article_line
 
 
+def generate_image_description(image_link: str) -> str:
+    prompt = (
+        textwrap.dedent(
+            """
+            You are given an image link.
+            Generate a short description for the image, and return exactly it, without explanation or anything else.
+            If the image link is broken, or the image is not accessible, or the image is not an image, return: None
+            
+            The image link:
+            {image_link}
+            """,
+        )
+        .format(image_link=image_link.strip())
+        .strip()
+    )
+    chat_completion = oai.chat.completions.create(
+        messages=[
+            {
+                'role': 'user',
+                'content': [
+                    {'type': 'text', 'text': prompt},
+                    {'type': 'image_url', 'image_url': {'url': image_link, 'detail':'high'}},
+                ],
+            }
+        ],
+        model='gpt-4-vision-preview',
+        temperature=0,
+        stream=False,
+        timeout=10,
+        max_tokens=1000
+    )
+    image_description = chat_completion.choices[0].message.content.splitlines()[0].strip()
+    return image_description
+
+
 def extract_image_links(markdown: str) -> list[str]:
     image_link_indices = get_image_link_indices(markdown)
     image_link_futures = []
