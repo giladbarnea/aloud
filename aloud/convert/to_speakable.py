@@ -8,8 +8,9 @@ from rich.style import Style
 from rich.text import Text
 
 from aloud.console import console
+from aloud.openai import oai
+from aloud.text import add_line_numbers
 
-from ..openai import oai
 from . import to_html, to_markdown
 
 # Prompt: TypeAlias = str
@@ -46,7 +47,6 @@ def to_speakable(thing: str | Path, output_dir: str | Path) -> Generator[str, No
         thing = Path(thing).read_text()
     html = to_html(thing, remove_head=True, output_dir=output_dir)
     markdown = to_markdown(html, output_dir=output_dir)
-
     model = 'gpt-4-1106-preview'
     to_speakable_with_markdown = TO_SPEAKABLE.format(markdown=markdown)
     # prompt = prompts.ChatPromptTemplate.from_messages(

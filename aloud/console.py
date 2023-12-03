@@ -49,6 +49,13 @@ class Console(RichConsole):
         )
         return status_renderable
 
+    def set_live(self, live: 'Live') -> None:
+        # todo: queue of lives
+        with self._lock:
+            if self._live is not None:
+                self._live.stop()
+            self._live = live
+
     def with_status(
         self,
         status: RenderableType,
@@ -66,7 +73,7 @@ class Console(RichConsole):
                     spinner_style=spinner_style,
                     speed=speed,
                     refresh_per_second=refresh_per_second,
-                ):
+                ) as live:
                     return func(*args, **kwargs)
 
             return wrapper

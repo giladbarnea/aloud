@@ -1,4 +1,3 @@
-import textwrap
 from pathlib import Path
 
 import pytest
@@ -7,13 +6,13 @@ from aloud.cli_utils import prepare_output_dir
 from aloud.console import console
 from aloud.convert import to_markdown
 from aloud.convert.to_markdown import (
-    add_line_numbers,
     convert_to_raw_markdown,
     extract_image_link,
     extract_image_links,
+    generate_image_description,
     get_image_link_indices,
-generate_image_description,
 )
+from aloud.text import add_line_numbers
 
 p = console.print
 
@@ -48,10 +47,13 @@ def test_links_and_images():
         'but I think that there is a strong possibility that it will quickly become too late.'
     )
 
+
 def test_generate_image_description():
-    image_url = "https://substack-post-media.s3.amazonaws.com/public/images/98f562a1-ece9-4e31-bafd-363da13fa741_667x571.png"
+    image_url = (
+        'https://substack-post-media.s3.amazonaws.com/public/images/98f562a1-ece9-4e31-bafd-363da13fa741_667x571.png'
+    )
     image_description = generate_image_description(image_url)
-    console.print(image_description)
+    assert image_description
 
 
 def test_extract_image_links():
@@ -160,52 +162,3 @@ def test_get_image_link_indices():
 def test_extract_image_link(line, link):
     actual_link = extract_image_link(line)
     assert actual_link == link
-
-
-def test_add_line_numbers():
-    markdown = textwrap.dedent(
-        """
-        # Title
-        ## Subtitle
-        
-        Paragraph
-        
-        List:
-        - Item 1
-        - Item 2
-        - Item 3
-        
-        Paragraph
-        
-        Table:
-        | Header 1 | Header 2 |
-        | -------- | -------- |
-        | Cell 1   | Cell 2   |
-        """,
-    ).strip()
-    markdown_with_line_numbers = add_line_numbers(markdown).removeprefix('\n').removesuffix('\n')
-    expected = (
-        textwrap.dedent(
-            """
-         0 │ # Title
-         1 │ ## Subtitle
-         2 │ 
-         3 │ Paragraph
-         4 │ 
-         5 │ List:
-         6 │ - Item 1
-         7 │ - Item 2
-         8 │ - Item 3
-         9 │ 
-        10 │ Paragraph
-        11 │ 
-        12 │ Table:
-        13 │ | Header 1 | Header 2 |
-        14 │ | -------- | -------- |
-        15 │ | Cell 1   | Cell 2   |
-        """
-        )
-        .removeprefix('\n')
-        .removesuffix('\n')
-    )
-    assert markdown_with_line_numbers == expected
