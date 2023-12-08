@@ -11,7 +11,7 @@ from aloud.console import console
 def to_html(url: str, *, remove_head: bool = False, output_dir: Path = None) -> str:
     if not util.is_url(url):
         return url
-    response = requests.get(url)
+    response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
     if not response.ok:
         response.raise_for_status()
     html = response.text

@@ -45,7 +45,7 @@ def get_openai_api_key(value):
 
 def infer_subdir_from_thing(thing: str | Path) -> str | None:
     if util.is_url(url := str(thing)):
-        return url.split('/')[-1]
+        return url.removesuffix('/').split('/')[-1]
     if util.is_pathlike(thing):
         return Path(thing).stem
     return None

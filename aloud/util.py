@@ -8,8 +8,8 @@ from aloud.console import console
 
 
 def is_url(thing) -> bool:
-    thing_str = str(thing)
-    return thing_str.startswith('http') or thing_str.startswith('www.')
+    str_thing = str(thing)
+    return str_thing.startswith('http') or str_thing.startswith('www.')
 
 
 def is_file(value: str | Path) -> bool:

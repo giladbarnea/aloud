@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from aloud import util
-from aloud.cli_utils import prepare_output_dir
+from aloud.cli_utils import infer_subdir_from_thing, prepare_output_dir
 
 
 def test_prepare_output_dir_both_None():
@@ -95,3 +95,18 @@ def test_prepare_output_dir_with_thing_and_output_dir_and():
     assert len(result.name) == 4
     assert util.is_empty_dir(result)
     result.rmdir()
+
+
+def test_infer_subdir_from_thing():
+    assert infer_subdir_from_thing('http://www.google.com/foo') == 'foo'
+    assert infer_subdir_from_thing('www.google.com/bar') == 'bar'
+    assert infer_subdir_from_thing('DOES_NOT_EXIST_AND_DOES_NOT_LOOK_LIKE_A_PATH_OR_URL') is None
+    assert (
+        infer_subdir_from_thing(
+            Path(
+                'tests/data/reshaping-the-tree-rebuilding-organizations/reshaping-the-tree-rebuilding-organizations.html'
+            )
+        )
+        == 'reshaping-the-tree-rebuilding-organizations'
+    )
+    assert infer_subdir_from_thing('https://a16z.com/big-ideas-in-tech-2024/') == 'big-ideas-in-tech-2024'
