@@ -29,8 +29,8 @@ def is_pathlike(thing: str | Path | None) -> bool:
         return True
     if os.path.sep not in str_thing:
         return False
-    legal_path_chars = {'-', '_', '~'}
-    illegal_path_chars = ''.join(set(punctuation) - legal_path_chars)
+    legal_path_punctuation = {'-', '_', '~'}
+    illegal_path_chars = ''.join(set(punctuation) - legal_path_punctuation)
     return not any(char in illegal_path_chars for char in str_thing)
 
 

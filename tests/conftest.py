@@ -1,10 +1,12 @@
 import os
 
 import pytest
+import rich.box
 from _pytest.nodes import Item
 from _pytest.reports import TestReport
 from _pytest.runner import CallInfo
 from pytest import fixture
+from rich.panel import Panel
 from rich.traceback import Traceback
 
 from aloud import convert
@@ -26,6 +28,42 @@ def pytest_runtest_makereport(item: Item, call: CallInfo) -> TestReport | None:
     print_rich_traceback(call.excinfo.value)
 
 
+def pytest_runtest_call(item: Item):
+    file, line_numer, test_name = item.location
+    console.print(
+        Panel(
+            f'[cyan][bold]Running:[/cyan] {test_name}[/]',
+            box=rich.box.MINIMAL,
+            subtitle=f'[dim]{file}:{line_numer}[/]',
+            subtitle_align='right',
+        )
+    )
+
+
+def pytest_runtest_teardown(item: Item):
+    file, line_numer, test_name = item.location
+    console.print(
+        Panel(
+            f'[bold]Teardown: {test_name}[/]',
+            box=rich.box.MINIMAL,
+            subtitle=f'[dim]{file}:{line_numer}[/]',
+            subtitle_align='right',
+        )
+    )
+
+
+def pytest_report_teststatus(report: TestReport, config):
+    test_title = f'{report.location[0]} {report.head_line}'
+    if report.when == 'call':
+        if report.passed:
+            return 'passed', f'\n✔ {test_title}', '✔ PASSED'
+        if report.failed:
+            return 'failed', f'\n✘ {test_title}', '✘ FAILED'
+        if report.skipped:
+            return 'skipped', f'\n⚠ {test_title}', '⚠ SKIPPED'
+    return None
+
+
 @fixture(scope='session')
 def to_html():
     return convert.to_html
@@ -37,7 +75,7 @@ def get_markdown():
 
 
 def get_markdown_fixture(url_or_html: str, *, remove_head: bool = True) -> str:
-    from convert.to_markdown import convert_to_raw_markdown
+    from aloud.convert.to_markdown import convert_to_raw_markdown
 
     html = convert.to_html(url_or_html, remove_head=remove_head)
     return convert_to_raw_markdown(html)
