@@ -5,6 +5,7 @@ from typing import ParamSpec, Self, TypeVar
 from rich.color import Color
 from rich.console import Console as RichConsole
 from rich.console import RenderableType
+from rich.live import Live
 from rich.status import Status as RichStatus
 from rich.style import Style, StyleType
 
@@ -49,7 +50,7 @@ class Console(RichConsole):
         )
         return status_renderable
 
-    def set_live(self, live: 'Live') -> None:
+    def set_live(self, live: Live) -> None:
         # todo: queue of lives
         with self._lock:
             if self._live is not None:
@@ -73,7 +74,7 @@ class Console(RichConsole):
                     spinner_style=spinner_style,
                     speed=speed,
                     refresh_per_second=refresh_per_second,
-                ) as live:
+                ):
                     return func(*args, **kwargs)
 
             return wrapper

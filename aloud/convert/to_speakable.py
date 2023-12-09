@@ -9,7 +9,6 @@ from rich.text import Text
 
 from aloud.console import console
 from aloud.openai import oai
-from aloud.text import add_line_numbers
 
 from . import to_html, to_markdown
 

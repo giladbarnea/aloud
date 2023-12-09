@@ -51,6 +51,7 @@ envfile = ".env"
 [tool.poe.tasks]
 test = { cmd = "pytest", env = { COLUMNS = "160" } }
 lint = { shell = "ruff format . && isort . " }
+lint-check = { shell = "ruff check --config=pyproject.toml . && isort . --check-only" }
 
 [tool.pytest.ini_options]
 python_files = ["tests/**/*.py"]
@@ -70,23 +71,37 @@ line-length = 120
 indent-width = 4
 target-version = "py311"
 builtins = ["live"]
+output-format = "grouped"
 
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = [
     "ANN",
     "D",
-    "E501",
-    "EM",
-    "ERA",
+    "E501",      
+    "EM",        
+    "ERA",       
     "F541",
     "FBT001",
+    "FBT002",    # Boolean default positional argument in function definition
+    "FIX002",
+    "N802",      # Function name should be lowercase
     "PLR0913",
     "PLR2004",
     "Q",
     "RET504",
+    "RUF001",    # String contains ambiguous `’` (RIGHT SINGLE QUOTATION MARK)
     "RUF013",
+    "S101",      # Use of assert detected
+    "S108",      # Probable insecure usage of temporary file or directory: "/tmp",
+    "S311",      # Standard pseudo-random generators are not suitable for security/cryptographic purposes
+    "T100",      # Trace found: `breakpoint` used
+    "T201",      # `print` found
+    "TD002",
+    "TD003",
+    "TD006",
     "TRY003",
+    "W293",      # Blank line contains whitespace
 ]
 
 [tool.ruff.format]

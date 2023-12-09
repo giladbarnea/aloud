@@ -5,14 +5,14 @@ import pytest
 from aloud.cli_utils import prepare_output_dir
 from aloud.console import console
 from aloud.convert import to_markdown
-from aloud.convert.to_markdown import (
-    convert_to_raw_markdown,
+from aloud.convert.to_markdown import convert_to_raw_markdown
+from aloud.text import add_line_numbers
+from aloud.vision import (
     extract_image_link,
     extract_image_links,
     generate_image_description,
     get_image_link_indices,
 )
-from aloud.text import add_line_numbers
 
 p = console.print
 
@@ -133,7 +133,7 @@ def test_generate_image_description():
     assert image_description
 
 
-def test_links_and_images(current_test_name):
+def test_links_and_images__reshaping_the_tree_rebuilding_organizations(current_test_name):
     """https://www.oneusefulthing.org/p/reshaping-the-tree-rebuilding-organizations"""
     thing = 'tests/data/reshaping-the-tree-rebuilding-organizations/reshaping-the-tree-rebuilding-organizations.html'
     html = Path(thing).read_text()
