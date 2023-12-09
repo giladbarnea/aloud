@@ -133,12 +133,12 @@ def test_generate_image_description():
     assert image_description
 
 
-def test_links_and_images():
+def test_links_and_images(current_test_name):
     """https://www.oneusefulthing.org/p/reshaping-the-tree-rebuilding-organizations"""
     thing = 'tests/data/reshaping-the-tree-rebuilding-organizations/reshaping-the-tree-rebuilding-organizations.html'
     html = Path(thing).read_text()
     temp_dir = prepare_output_dir(thing, '/tmp')
-    print(temp_dir)
+    console.print(f'{current_test_name}: temp_dir={temp_dir}')
     (temp_dir / 'html.html').write_text(html)
     raw_markdown = convert_to_raw_markdown(html)
     (temp_dir / 'raw_markdown.md').write_text(raw_markdown)

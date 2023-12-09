@@ -61,7 +61,6 @@ addopts = """
     --capture=no
     --code-highlight=yes
     --tb=short
-    -vv
     --doctest-modules
 """
 filterwarnings = ["default:invalid escape sequence:DeprecationWarning"]
