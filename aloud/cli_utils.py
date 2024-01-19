@@ -32,14 +32,17 @@ def get_openai_api_key(value):
         return value
     if os.getenv('OPENAI_API_KEY'):
         return os.getenv('OPENAI_API_KEY')
-    api_key_dotfile_names = ['.openai-api-token-pecan', '.openai-api-token']
-    for api_key_dotfile_name in api_key_dotfile_names:
-        api_key_file_path = Path.home() / api_key_dotfile_name
-        if api_key_file_path.exists():
-            return api_key_file_path.read_text().strip()
+    possible_api_key_file_paths = (
+        '~/.openai-api-key',
+        # repo root / '.openai-api-key',
+    )
+    for api_key_file_path in possible_api_key_file_paths:
+        if (file_path := Path(api_key_file_path).expanduser()).exists():
+            return file_path.read_text().strip()
     raise typer.BadParameter(
-        'Must specify --openai-api-key, or set OPENAI_API_KEY environment variable, or have a file at'
-        ' ~/.openai-api-token',
+        'Must specify --openai-api-key, or set OPENAI_API_KEY environment variable, or have a file '
+        'containing the key at one of the following locations: '
+        ', '.join(possible_api_key_file_paths)
     )
 
 

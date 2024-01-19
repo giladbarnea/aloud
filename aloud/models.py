@@ -57,6 +57,16 @@ VoiceModelOption = Annotated[
     default_voice_model,
 ]
 
+chat_models = ('gpt-4-1106-preview', 'gpt-4', 'gpt-3.5-turbo')
+default_chat_model = 'gpt-4-1106-preview'
+ChatModel = Literal[chat_models]
+ChatModel.default = default_chat_model
+ChatModelOption = Annotated[
+    str,
+    typer.Option('--model', click_type=click.Choice(chat_models)),
+    default_chat_model,
+]
+
 voice_response_formats = ('mp3', 'opus', 'aac', 'flac')
 default_voice_response_format = 'mp3'
 VoiceResponseFormat = Literal[voice_response_formats]
@@ -67,7 +77,7 @@ VoiceResponseFormatOption = Annotated[
     default_voice_response_format,
 ]
 
-OpenAIKey = Annotated[
+OpenAIKeyOption = Annotated[
     str,
     typer.Option('-k', '--openai-api-key', callback=cli_utils.get_openai_api_key, envvar='OPENAI_API_KEY'),
 ]
