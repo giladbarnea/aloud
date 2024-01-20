@@ -97,7 +97,7 @@ def prepare_output_dir(thing: str | Path | None, output_dir: str | Path | None) 
     return default_output_dir / random_string
 
 
-def assert_args_ok(only_audio: bool, only_speakable: bool, output_dir: str | Path = None):
+def assert_args_ok(only_audio: bool, only_speakable: bool, output_dir: str | Path = None):  # noqa: FBT001
     if only_audio and not output_dir:
         raise typer.BadParameter('Must specify --output-dir when using --only-audio')
     if only_audio and only_speakable:

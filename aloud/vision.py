@@ -143,7 +143,7 @@ def extract_image_link(markdown_line: str) -> str:
             """
             You are given a markdown line which contains an image link.
             Extract the image link, and return exactly it, without explanation or anything else.
-            Note that sometimes, the domain of the link is that of a CDN, or analytics, or similar, but the actual image link is a parameter of the URL. An oversimplified example of such a link is: https://cdn.irrelevant.com/https://actual-link.com/image.png?width=100&height=100, in which case, you would return: https://actual-link.com/image.png 
+            Note that sometimes, the domain of the link is that of a CDN, or analytics, or similar, but the actual image link is a parameter of the URL. An oversimplified example of such a link is: https://cdn.irrelevant.com/https://actual-link.com/image.png?width=100&height=100, in which case, you would return: https://actual-link.com/image.png
 
             The markdown line:
             {markdown_line}

@@ -25,7 +25,7 @@ class Annotated(_Annotated):
         return inst
 
 
-def random_voice(ctx, param, value):
+def random_voice(ctx, param, value):  # noqa: ARG001
     if value == 'random':
         return random.choice(voices)
     return value
