@@ -44,6 +44,8 @@ def inject_image_descriptions_as_alt(markdown, image_link_indices, image_links, 
 
 
 def generate_image_descriptions(image_links: list[str]) -> list[str]:
+    if not image_links:
+        return []
     image_description_futures = []
     with ThreadPoolExecutor(max_workers=len(image_links)) as executor:
         for image_link in image_links:
@@ -101,6 +103,8 @@ def extract_image_links(markdown: str) -> list[str]:
 
 @dispatch
 def extract_image_links(markdown: str, image_link_indices: list[int]) -> list[str]:
+    if not image_link_indices:
+        return []
     image_link_futures = []
     with ThreadPoolExecutor(max_workers=len(image_link_indices)) as executor:
         markdown_lines = markdown.splitlines()
@@ -114,13 +118,17 @@ def extract_image_links(markdown: str, image_link_indices: list[int]) -> list[st
 
 def get_image_link_indices(markdown: str) -> list[int]:
     assert has_line_numbers(markdown)
+    lines_with_links = get_lines_with_links(markdown)
+    if not lines_with_links:
+        return []
+    markdown_with_links = '\n'.join(lines_with_links)
     prompt = (
         textwrap.dedent(
             f"""
             You are given a markdown representation of an article from the internet, generated automatically by a tool. This means that the markdown is not perfect.
             Line numbers are shown on the left "gutter" of the markdown; the special vertical line `{LINE_NUMBER_SEPARATOR}` separates each line number from the rest of the line, and the first line is 0.
-            Find all the image links in the article, and return their line numbers as listed in the gutters of the lines where the image links appear, separated by line breaks, and only them, without explanation or anything else.
-            If the article does not contain any images, return: None
+            Find all the image links in the article, and write their line numbers as listed in the gutters of the lines where the image links appear, separated by line breaks, and only them, without explanation or anything else.
+            If the article does not contain any images, write: None
 
             The article's markdown representation is:
 
@@ -128,7 +136,7 @@ def get_image_link_indices(markdown: str) -> list[int]:
 
             """,
         )
-        .format(markdown=markdown.strip())
+        .format(markdown=markdown_with_links.strip())
         .strip()
     )
     chat_completion = oai.chat.completions.create(
@@ -138,10 +146,23 @@ def get_image_link_indices(markdown: str) -> list[int]:
         stream=False,
         timeout=10,
     )
+    indices_response: str = chat_completion.choices[0].message.content.strip()
+    if indices_response == 'None':
+        return []
+    assert 'None' not in indices_response
     image_link_indices = []
-    for index in chat_completion.choices[0].message.content.splitlines():
+    for index in indices_response.splitlines():
         image_link_indices.append(int(index.strip()))
     return image_link_indices
+
+
+def get_lines_with_links(markdown: str) -> list[str]:
+    markdown_lines = markdown.splitlines()
+    lines_with_links = []
+    for line in markdown_lines:
+        if 'http' in line or 'www.' in line:
+            lines_with_links.append(line)
+    return lines_with_links
 
 
 def extract_image_link(markdown_line: str) -> str:

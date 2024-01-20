@@ -83,9 +83,9 @@ class Console(RichConsole):
 
 
 console = Console(
-    color_system='truecolor',
-    force_terminal=True,
-    force_interactive=True,
+    # color_system='truecolor',
+    # force_terminal=True,
+    # force_interactive=True,
     stderr=True,
     tab_size=4,
     log_time_format='%F %X',  # or "[%T]", see https://docs.python.org/3/library/time.html#time.strftime

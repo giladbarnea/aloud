@@ -30,7 +30,7 @@ def remove_line_numbers(markdown: str) -> str:
 def remove_lines_until(markdown: str, line: str) -> str:
     markdown_lines = markdown.splitlines()
     line_index = index_of(markdown_lines, line)
-    console.log(f'line (idx {line_index}):\n{line!r}')
+    console.log(f'remove_lines_until => line (idx {line_index}):\n', line)
     clean_markdown = '\n'.join(markdown_lines[line_index:])
     return clean_markdown
 
@@ -39,7 +39,7 @@ def remove_lines_after(markdown: str, line: str) -> str:
     markdown_lines = markdown.splitlines()
     reversed_markdown_lines = list(reversed(markdown_lines))
     line_reverse_index = index_of(reversed_markdown_lines, line)
-    console.log(f'line (idx -{line_reverse_index}):\n{line!r}')
+    console.log(f'remove_lines_after => line (idx -{line_reverse_index}):\n', line)
     if line_reverse_index == 0:
         return markdown
     clean_markdown = '\n'.join(markdown_lines[:-line_reverse_index])
