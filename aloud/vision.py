@@ -16,12 +16,19 @@ from aloud.text import (
 
 
 @console.with_status('Generating and injecting image descriptions...')
+@dispatch
 def inject_image_descriptions_as_alt(markdown: str) -> str:
     markdown_with_line_numbers = add_line_numbers(markdown)
     image_link_indices: list[int] = get_image_link_indices(markdown_with_line_numbers)
     image_links: list[str] = extract_image_links(markdown_with_line_numbers, image_link_indices)
     image_descriptions: list[str] = generate_image_descriptions(image_links)
     markdown = remove_line_numbers(markdown_with_line_numbers)
+    markdown = inject_image_descriptions_as_alt(markdown, image_link_indices, image_links, image_descriptions)
+    return markdown
+
+
+@dispatch
+def inject_image_descriptions_as_alt(markdown, image_link_indices, image_links, image_descriptions):
     markdown_lines = markdown.splitlines()
     line_index: int
     image_link: str
@@ -162,4 +169,24 @@ def extract_image_link(markdown_line: str) -> str:
     )
     image_link = chat_completion.choices[0].message.content.splitlines()[0].strip()
     unquoted_image_link = unquote(image_link)
+    unquoted_manual_image_link = extract_image_link_manual(markdown_line)
+    if unquoted_image_link.removesuffix('/') == unquoted_manual_image_link.removesuffix('/'):
+        console.log('✔️ extract_image_link_manual(markdown_line) same as LLM:', unquoted_image_link)
+    else:
+        console.log(
+            '⚠️[yellow] extract_image_link_manual(markdown_line) different from LLM. Manual:',
+            unquoted_manual_image_link,
+            'LLM:',
+            unquoted_image_link,
+        )
     return unquoted_image_link
+
+
+def extract_image_link_manual(markdown_line: str) -> str:
+    line = markdown_line.strip()
+    if 'http' not in line:
+        return markdown_line
+    image_link = line[line.rindex('http') :]
+    if '?' in image_link:
+        image_link = image_link[: image_link.index('?')]
+    return image_link
