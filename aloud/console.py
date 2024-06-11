@@ -73,6 +73,7 @@ class Console(RichConsole):
         def decorator(func: Callable[P, R]) -> Callable[P, R]:
             if running_pytest():
                 return func
+
             def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
                 with self.status(
                     status,

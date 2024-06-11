@@ -12,9 +12,10 @@ from rich.traceback import Traceback
 from aloud import convert
 from aloud.console import console
 
+
 @pytest.fixture(scope='session', autouse=True)
 def load_env():
-# def pytest_sessionstart(session: pytest.Session):
+    # def pytest_sessionstart(session: pytest.Session):
     import dotenv
 
     dotenv.load_dotenv()
@@ -37,7 +38,7 @@ def pytest_runtest_call(item: Item):
             box=rich.box.MINIMAL,
             subtitle=f'[dim]{file}:{line_numer}[/]',
             subtitle_align='right',
-        )
+        ),
     )
 
 
@@ -49,7 +50,7 @@ def pytest_runtest_teardown(item: Item):
             box=rich.box.MINIMAL,
             subtitle=f'[dim]{file}:{line_numer}[/]',
             subtitle_align='right',
-        )
+        ),
     )
 
 

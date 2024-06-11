@@ -1,5 +1,5 @@
-from pathlib import Path
 from collections.abc import Generator
+from pathlib import Path
 
 from langchain import hub
 from langchain.prompts import PromptTemplate
@@ -8,8 +8,8 @@ from rich.style import Style
 from rich.text import Text
 
 from aloud.console import console, get_gradient_color
-from aloud.oai import oai
 from aloud.convert import to_html, to_markdown
+from aloud.oai import oai
 
 # Prompt: TypeAlias = str
 
@@ -102,5 +102,3 @@ def to_speakable(thing: str | Path, output_dir: str | Path) -> Generator[str, No
     speakable_text_path = output_dir / f'{output_dir.name}.txt'
     speakable_text_path.write_text(speakable)
     console.print('\n[b green]Wrote speakable to', speakable_text_path)
-
-

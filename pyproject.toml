@@ -60,7 +60,7 @@ lint-check = { shell = "ruff check --config=pyproject.toml . && isort . --check-
 
 [tool.pytest.ini_options]
 python_files = ["tests/**/*.py"]
-log_format = "[%(levelname)-5s %(asctime)s %(filename)s:%(lineno)d %(funcName)s()] %(message)s"
+log_format = "[%(levelname)-5s %(asctime)s %(name)s@%(filename)s:%(lineno)d %(funcName)s()] %(message)s"
 log_auto_indent = 2
 addopts = """
     --color=yes
@@ -68,8 +68,10 @@ addopts = """
     --code-highlight=yes
     --tb=short
     --doctest-modules
+    --keep-duplicates       # Makes possible to have test dirs that don't start with test_
 """
 filterwarnings = ["default:invalid escape sequence:DeprecationWarning"]
+python_classes = "Test* test_*"
 
 [tool.ruff]
 line-length = 120
@@ -96,6 +98,7 @@ ignore = [
     "PERF401",   # Use a list comprehension to create a transformed list
     "PLR0913",   # Too many function arguments
     "PLR2004",   # Magic value comparison
+    "PT003",     # Checks for `pytest.fixture` calls with `scope="function"`.
     "Q",         # Quotes
     "RET504",    # Unnecessary assignment to a variable before return statement
     "RUF001",    # String contains ambiguous `’` (RIGHT SINGLE QUOTATION MARK)
