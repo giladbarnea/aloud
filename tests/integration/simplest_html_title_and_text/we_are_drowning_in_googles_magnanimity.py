@@ -1,9 +1,6 @@
 import textwrap
 from pathlib import Path
 
-from openai import OpenAI
-from rich import print
-
 from aloud.oai import oai
 
 ARTICLE_URL = 'https://www.kpassa.me/posts/google'
@@ -16,7 +13,7 @@ def test_generate_audio(get_markdown):
             """
     You are given a markdown representation of an article from the internet.
 
-    Convert the syntax of the markdown into text that can be read out. 
+    Convert the syntax of the markdown into text that can be read out.
     The general principle is that, as you know, saying "hashtag hastag <something>" does not make sense to humans, so you should convert that to "The title of the next section is <something>.".
     Similarly, saying "Open square brackets, Press here, close square brackets, open parenthesis, https://www.google.com, close parenthesis" does not make sense to humans, so you should convert that to "There's a link to Google here.".
     Generalize this to everything that when pr6onounced literally does not make sense to humans.
@@ -26,13 +23,14 @@ def test_generate_audio(get_markdown):
     ```md
     {markdown}
     ```
-    """
+    """,
         )
         .format(markdown=markdown)
         .strip()
     )
     chat_completion = oai.chat.completions.create(
-        messages=[{'role': 'user', 'content': prompt}], model='gpt-4-1106-preview'
+        messages=[{'role': 'user', 'content': prompt}],
+        model='gpt-4-1106-preview',
     )
     result = chat_completion.choices[0].message.content
     chunk_size = 4096

@@ -150,7 +150,7 @@ def test_links_and_images__reshaping_the_tree_rebuilding_organizations(current_t
         'While that restricts what AI can do, the capabilities of AI are increasing exponentially, '
         'both in terms of the models themselves and the tools these models can use. '
         'It might seem too early to consider changing an organization to accommodate AI, '
-        'but I think that there is a strong possibility that it will quickly become too late.'
+        'but I think that there is a strong possibility that it will quickly become too late.',
     )
 
 

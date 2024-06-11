@@ -44,7 +44,7 @@ class TestLineNumbers:
     13 │ | Header 1 | Header 2 |
     14 │ | -------- | -------- |
     15 │ | Cell 1   | Cell 2   |
-    """
+    """,
         )
         .removeprefix('\n')
         .removesuffix('\n')

@@ -51,7 +51,8 @@ def index_of(string_lines: list[str], substring: str, *, case_sensitive=True) ->
     if lines_equal_to_substring:
         if len(lines_equal_to_substring) > 1:
             console.log(
-                '⚠️ %d lines equal to substring %r' % (len(lines_equal_to_substring), substring), _stack_offset=2
+                '⚠️ %d lines equal to substring %r' % (len(lines_equal_to_substring), substring),
+                _stack_offset=2,
             )
         return string_lines.index(lines_equal_to_substring[0])
     lines_starting_with_substring = [line for line in string_lines if line.startswith(substring)]

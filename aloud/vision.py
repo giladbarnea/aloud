@@ -79,7 +79,7 @@ def generate_image_description(image_link: str) -> str:
                         {'type': 'text', 'text': prompt},
                         {'type': 'image_url', 'image_url': {'url': image_link, 'detail': 'high'}},
                     ],
-                }
+                },
             ],
             model='gpt-4-vision-preview',
             temperature=0,

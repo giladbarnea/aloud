@@ -42,7 +42,7 @@ def get_openai_api_key(value):
     raise typer.BadParameter(
         'Must specify --openai-api-key, or set OPENAI_API_KEY environment variable, or have a file '
         'containing the key at one of the following locations: '
-        ', '.join(possible_api_key_file_paths)
+        ', '.join(possible_api_key_file_paths),
     )
 
 

@@ -23,8 +23,6 @@ typer = "^0.9.0"
 langchainhub = "^0.1.14"
 
 [tool.poetry.group.dev.dependencies]
-black = {extras = ["jupyter"], version = "^23.3.0"}
-isort = "^5.12.0"
 pytest = "^7.4.0"
 ipython = "^8.14.0"
 jupyter = "^1.0.0"
@@ -41,34 +39,27 @@ ipython-autoimport = "^0.4"
 [tool.poetry.scripts]
 aloud = 'aloud.main:main'
 
-
-[tool.black]
-line-length = 120
-skip-magic-trailing-comma = true
-preview = true
-
-[tool.isort]
-profile = "black"
-
 [tool.poe]
 envfile = ".env"
 
 [tool.poe.tasks]
-test = { cmd = "pytest", env = { COLUMNS = "160" } }
-lint = { shell = "ruff format . && isort . " }
-lint-check = { shell = "ruff check --config=pyproject.toml . && isort . --check-only" }
+test = { cmd = "pytest" }
+lint = { shell = "ruff check --fix . ; ruff format ." }
+lint-check = { shell = "ruff check --show-fixes --show-source . ; ruff format --check --diff ." }
 
 [tool.pytest.ini_options]
 python_files = ["tests/**/*.py"]
 log_format = "[%(levelname)-5s %(asctime)s %(name)s@%(filename)s:%(lineno)d %(funcName)s()] %(message)s"
 log_auto_indent = 2
+
+# --keep-duplicatse makes possible to have test dirs that don't start with test_
 addopts = """
     --color=yes
     --capture=no
     --code-highlight=yes
     --tb=short
     --doctest-modules
-    --keep-duplicates       # Makes possible to have test dirs that don't start with test_
+    --keep-duplicates
 """
 filterwarnings = ["default:invalid escape sequence:DeprecationWarning"]
 python_classes = "Test* test_*"
@@ -91,7 +82,7 @@ ignore = [
     "E501",      # Line too long
     "EM",        # Error messages: string formatting
     "ERA",       # Comments
-#    "FBT001",
+#    "FBT001",    # Boolean type hint positional argument in function definition
 #    "FBT002",    # Boolean default positional argument in function definition
     "FIX002",    # To do found
     "N802",      # Function name should be lowercase
@@ -102,7 +93,6 @@ ignore = [
     "Q",         # Quotes
     "RET504",    # Unnecessary assignment to a variable before return statement
     "RUF001",    # String contains ambiguous `’` (RIGHT SINGLE QUOTATION MARK)
-    "RUF013",    # Implicit Optional
     "S101",      # Use of assert detected
     "S108",      # Probable insecure usage of temporary file or directory: "/tmp",
     "S311",      # Standard pseudo-random generators are not suitable for security/cryptographic purposes

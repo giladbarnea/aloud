@@ -161,7 +161,10 @@ def to_markdown(
     raw_markdown = converts_to_raw_markdown(html)
     first_real_article_line, first_post_title_line, last_real_article_line = finds_real_article_boundaries(raw_markdown)
     clean_markdown = cleans_junk_sections(
-        raw_markdown, first_real_article_line, first_post_title_line, last_real_article_line
+        raw_markdown,
+        first_real_article_line,
+        first_post_title_line,
+        last_real_article_line,
     )
     if output_dir:
         markdown_path = output_dir / f'{output_dir.name}.md'

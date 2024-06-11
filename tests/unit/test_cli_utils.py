@@ -28,7 +28,7 @@ def test_prepare_output_dir_only_with_thing():
     result.rmdir()
 
     thing = Path(
-        'tests/data/reshaping-the-tree-rebuilding-organizations/reshaping-the-tree-rebuilding-organizations.html'
+        'tests/data/reshaping-the-tree-rebuilding-organizations/reshaping-the-tree-rebuilding-organizations.html',
     )
     result = prepare_output_dir(thing, output_dir)
     assert result.samefile(Path.cwd() / 'reshaping-the-tree-rebuilding-organizations')
@@ -82,7 +82,7 @@ def test_prepare_output_dir_with_thing_and_output_dir_and():
     result.rmdir()
 
     thing = Path(
-        'tests/data/reshaping-the-tree-rebuilding-organizations/reshaping-the-tree-rebuilding-organizations.html'
+        'tests/data/reshaping-the-tree-rebuilding-organizations/reshaping-the-tree-rebuilding-organizations.html',
     )
     output_dir = Path('/tmp')
     result = prepare_output_dir(thing, output_dir)
@@ -104,8 +104,8 @@ def test_infer_subdir_from_thing():
     assert (
         infer_subdir_from_thing(
             Path(
-                'tests/data/reshaping-the-tree-rebuilding-organizations/reshaping-the-tree-rebuilding-organizations.html'
-            )
+                'tests/data/reshaping-the-tree-rebuilding-organizations/reshaping-the-tree-rebuilding-organizations.html',
+            ),
         )
         == 'reshaping-the-tree-rebuilding-organizations'
     )
