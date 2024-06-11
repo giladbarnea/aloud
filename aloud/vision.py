@@ -6,7 +6,7 @@ from openai import BadRequestError
 from plum import dispatch
 
 from aloud.console import console
-from aloud.openai import oai
+from aloud.oai import oai
 from aloud.text import (
     LINE_NUMBER_SEPARATOR,
     add_line_numbers,

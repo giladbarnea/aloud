@@ -1191,6 +1191,19 @@ test = ["pytest (<7.1)", "pytest-asyncio", "testpath"]
 test-extra = ["curio", "matplotlib (!=3.2.0)", "nbformat", "numpy (>=1.21)", "pandas", "pytest (<7.1)", "pytest-asyncio", "testpath", "trio"]
 
 [[package]]
+name = "ipython-autoimport"
+version = "0.4"
+description = "Automagically import missing modules in IPython."
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "ipython-autoimport-0.4.tar.gz", hash = "sha256:8afb1bb3327840a7a5f498a14128f29732f05747c3ac8516ad137cc7e72be2ba"},
+]
+
+[package.dependencies]
+ipython = ">=4.1"
+
+[[package]]
 name = "ipython-genutils"
 version = "0.2.0"
 description = "Vestigial utilities from IPython"
@@ -1200,6 +1213,21 @@ files = [
     {file = "ipython_genutils-0.2.0-py2.py3-none-any.whl", hash = "sha256:72dd37233799e619666c9f639a9da83c34013a73e8bbc79a7a6348d93c61fab8"},
     {file = "ipython_genutils-0.2.0.tar.gz", hash = "sha256:eb2e116e75ecef9d4d228fdc66af54269afa26ab4463042e33785b887c628ba8"},
 ]
+
+[[package]]
+name = "ipythonclipboard"
+version = "1.0b2"
+description = "An IPython extension to copy and/or pickle input/output lines or variables."
+optional = false
+python-versions = "*"
+files = [
+    {file = "IPythonClipboard-1.0b2-py3-none-any.whl", hash = "sha256:23c0cf68cec472652f029f01839c4edb6967b50a3b4d4a76b9395232f63c2ee0"},
+    {file = "IPythonClipboard-1.0b2.tar.gz", hash = "sha256:c4fc101708f160a796e7add2d9da5a7fa7df956e6de6655f6f49d085d48d765f"},
+]
+
+[package.dependencies]
+ipython = "*"
+pyperclip = "*"
 
 [[package]]
 name = "ipywidgets"
@@ -2821,6 +2849,16 @@ files = [
 ]
 
 [[package]]
+name = "pyperclip"
+version = "1.8.2"
+description = "A cross-platform clipboard module for Python. (Only handles plain text for now.)"
+optional = false
+python-versions = "*"
+files = [
+    {file = "pyperclip-1.8.2.tar.gz", hash = "sha256:105254a8b04934f0bc84e9c24eb360a591aaf6535c9def5f29d92af107a9bf57"},
+]
+
+[[package]]
 name = "pyreadline"
 version = "2.1"
 description = "A python implmementation of GNU readline."
@@ -4245,4 +4283,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "0bb84a7d8a83027e6e655bf4717c6277b1d191867b7d876c3d462ce299c34e05"
+content-hash = "e10dc9b288902de558f6f7ff1e307d11f368a24ddd05a699be41f63f7115b6e5"

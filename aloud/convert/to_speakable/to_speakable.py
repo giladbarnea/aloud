@@ -1,5 +1,5 @@
-from collections.abc import Generator
 from pathlib import Path
+from collections.abc import Generator
 
 from langchain import hub
 from langchain.prompts import PromptTemplate
@@ -7,10 +7,9 @@ from rich.color import Color
 from rich.style import Style
 from rich.text import Text
 
-from aloud.console import console
-from aloud.openai import oai
-
-from . import to_html, to_markdown
+from aloud.console import console, get_gradient_color
+from aloud.oai import oai
+from aloud.convert import to_html, to_markdown
 
 # Prompt: TypeAlias = str
 
@@ -37,6 +36,7 @@ from . import to_html, to_markdown
 # ```
 # """.strip()
 # If you encounter a list, append the sentence just before it with a very short saying, communicating that a list is coming up. The saying should meld very organically with the sentence.
+
 TO_SPEAKABLE: PromptTemplate = hub.pull('pecan-ai/aloud-to-speakable')
 
 
@@ -104,12 +104,3 @@ def to_speakable(thing: str | Path, output_dir: str | Path) -> Generator[str, No
     console.print('\n[b green]Wrote speakable to', speakable_text_path)
 
 
-def get_gradient_color(start_color, end_color, num_steps, step):
-    r_start, g_start, b_start = start_color
-    r_end, g_end, b_end = end_color
-
-    r = r_start + (r_end - r_start) * step / num_steps
-    g = g_start + (g_end - g_start) * step / num_steps
-    b = b_start + (b_end - b_start) * step / num_steps
-
-    return int(r), int(g), int(b)

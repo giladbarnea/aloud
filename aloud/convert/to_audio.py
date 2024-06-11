@@ -2,7 +2,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from aloud import models
 from aloud.console import console
-from aloud.openai import oai
+from aloud.oai import oai
 
 
 def to_audio(

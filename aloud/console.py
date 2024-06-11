@@ -1,4 +1,6 @@
 import builtins
+import os
+import sys
 from collections.abc import Callable
 from typing import ParamSpec, Self, TypeVar
 
@@ -8,6 +10,8 @@ from rich.console import RenderableType
 from rich.live import Live
 from rich.status import Status as RichStatus
 from rich.style import Style, StyleType
+
+running_pytest = lambda: os.getenv('PYTEST_CURRENT_TEST') or 'pytest' in sys.argv[0]
 
 P = ParamSpec('P')
 R = TypeVar('R')
@@ -67,6 +71,8 @@ class Console(RichConsole):
         refresh_per_second: float = 12.5,
     ) -> Callable[[Callable[P, R]], Callable[P, R]]:
         def decorator(func: Callable[P, R]) -> Callable[P, R]:
+            if running_pytest():
+                return func
             def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
                 with self.status(
                     status,
@@ -90,3 +96,14 @@ console = Console(
     tab_size=4,
     log_time_format='%F %X',  # or "[%T]", see https://docs.python.org/3/library/time.html#time.strftime
 )
+
+
+def get_gradient_color(start_color, end_color, num_steps, step):
+    r_start, g_start, b_start = start_color
+    r_end, g_end, b_end = end_color
+
+    r = r_start + (r_end - r_start) * step / num_steps
+    g = g_start + (g_end - g_start) * step / num_steps
+    b = b_start + (b_end - b_start) * step / num_steps
+
+    return int(r), int(g), int(b)

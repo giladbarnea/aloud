@@ -12,8 +12,9 @@ from rich.traceback import Traceback
 from aloud import convert
 from aloud.console import console
 
-
-def pytest_sessionstart(session: pytest.Session):
+@pytest.fixture(scope='session', autouse=True)
+def load_env():
+# def pytest_sessionstart(session: pytest.Session):
     import dotenv
 
     dotenv.load_dotenv()

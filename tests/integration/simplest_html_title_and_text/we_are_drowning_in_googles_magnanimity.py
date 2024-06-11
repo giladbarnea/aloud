@@ -4,7 +4,7 @@ from pathlib import Path
 from openai import OpenAI
 from rich import print
 
-from aloud.openai import oai
+from aloud.oai import oai
 
 ARTICLE_URL = 'https://www.kpassa.me/posts/google'
 

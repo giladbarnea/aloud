@@ -3,6 +3,7 @@ from pathlib import Path
 import typer
 from plum import dispatch
 
+import aloud.convert.to_speakable.to_speakable
 from aloud import convert, models
 from aloud.cli_utils import assert_args_ok, prepare_output_dir
 from aloud.console import console
@@ -21,10 +22,10 @@ def process(
     assert_args_ok(only_audio, only_speakable, output_dir)
     output_dir = prepare_output_dir(thing, output_dir)
     if only_speakable:
-        return ''.join(convert.to_speakable(thing, output_dir)).encode()
+        return ''.join(aloud.convert.to_speakable.to_speakable.to_speakable(thing, output_dir)).encode()
     if only_audio:
         return process_audio(voice, voice_model, voice_response_format, output_dir)
-    speakable: str = ''.join(convert.to_speakable(thing, output_dir))
+    speakable: str = ''.join(aloud.convert.to_speakable.to_speakable.to_speakable(thing, output_dir))
     return process_audio(speakable, voice, voice_model, voice_response_format, output_dir)
 
 

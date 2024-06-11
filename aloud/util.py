@@ -9,7 +9,7 @@ from aloud.console import console
 
 def is_url(thing) -> bool:
     str_thing = str(thing)
-    return str_thing.startswith('http') or str_thing.startswith('www.')
+    return str_thing.startswith(('http', 'www.'))
 
 
 def is_file(value: str | Path) -> bool:

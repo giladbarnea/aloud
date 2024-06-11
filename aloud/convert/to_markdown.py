@@ -6,7 +6,7 @@ from pathlib import Path
 import html2text
 
 from aloud.console import console
-from aloud.openai import oai
+from aloud.oai import oai
 from aloud.text import has_line_numbers, remove_lines_after, remove_lines_until
 from aloud.vision import inject_image_descriptions_as_alt
 

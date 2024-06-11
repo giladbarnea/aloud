@@ -35,6 +35,8 @@ langsmith = "^0.0.66"
 ruff = "^0.1.6"
 pytest-clarity = "^1.0.1"
 pytest-datadir = "^1.5.0"
+ipythonclipboard = "^1.0b2"
+ipython-autoimport = "^0.4"
 
 [tool.poetry.scripts]
 aloud = 'aloud.main:main'
