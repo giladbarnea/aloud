@@ -10,6 +10,8 @@ from aloud.oai import oai
 from aloud.text import has_line_numbers, remove_lines_after, remove_lines_until
 from aloud.vision import inject_image_descriptions_as_alt
 
+from . import prompts
+
 
 def convert_to_raw_markdown(html: str, **html2text_kwargs) -> str:
     """https://github.com/Alir3z4/html2text/blob/master/docs/usage.md"""
@@ -43,7 +45,7 @@ def convert_to_raw_markdown(html: str, **html2text_kwargs) -> str:
     return markdown
 
 
-def find_real_article_boundaries(markdown):
+def find_real_article_boundaries(markdown: str) -> tuple[str, str, str]:
     with ThreadPoolExecutor(max_workers=3) as executor:
         first_real_article_line_future = executor.submit(find_first_real_article_line, markdown)
         first_post_title_line_future = executor.submit(find_first_post_title_line, markdown)
@@ -55,30 +57,13 @@ def find_real_article_boundaries(markdown):
 
 
 def find_first_real_article_line(markdown: str) -> str:
-    prompt = (
-        textwrap.dedent(
-            """
-            You are given a markdown representation of an article from the internet, generated automatically by a tool. This means that the markdown is not perfect.
-            Often, the markdown will start with things that used to be the website's navigation bar, social media links, etc, and only after that will the actual article start, usually with a title.
-            Find the line where the real article starts, and return exactly that line, and only it, without explanation or anything else.
-        
-            The article's markdown representation is:
-            
-            {markdown}
-            
-            """,
-        )
-        .format(markdown=markdown)
-        .strip()
-    )
-    chat_completion = oai.chat.completions.create(
+    template = prompts.get('find_first_real_article_line')
+    prompt = template.format(markdown=markdown)
+    chat_completion = oai.chat.call(
         messages=[{'role': 'system', 'content': prompt}],
-        model='gpt-4-1106-preview',
-        temperature=0,
-        stream=False,
         timeout=10,
     )
-    first_real_article_line = chat_completion.choices[0].message.content.splitlines()[0]
+    first_real_article_line = chat_completion.content.splitlines()[0]
     return first_real_article_line
 
 
@@ -100,14 +85,11 @@ def find_first_post_title_line(markdown: str) -> str:
         .format(markdown=markdown.strip())
         .strip()
     )
-    chat_completion = oai.chat.completions.create(
+    chat_completion = oai.chat.call(
         messages=[{'role': 'system', 'content': prompt}],
-        model='gpt-4-1106-preview',
-        temperature=0,
-        stream=False,
         timeout=10,
     )
-    last_real_article_line = chat_completion.choices[0].message.content.splitlines()[0]
+    last_real_article_line = chat_completion.content.splitlines()[0]
     return last_real_article_line
 
 
@@ -129,18 +111,20 @@ def find_last_real_article_line(markdown: str) -> str:
         .format(markdown=markdown.strip())
         .strip()
     )
-    chat_completion = oai.chat.completions.create(
+    chat_completion = oai.chat.call(
         messages=[{'role': 'system', 'content': prompt}],
-        model='gpt-4-1106-preview',
-        temperature=0,
-        stream=False,
         timeout=10,
     )
-    last_real_article_line = chat_completion.choices[0].message.content.splitlines()[0]
+    last_real_article_line = chat_completion.content.splitlines()[0]
     return last_real_article_line
 
 
-def clean_junk_sections(raw_markdown, first_real_article_line, first_post_title_line, last_real_article_line):
+def clean_junk_sections(
+    raw_markdown: str,
+    first_real_article_line: str,
+    first_post_title_line: str,
+    last_real_article_line: str,
+) -> str:
     clean_markdown = remove_lines_until(raw_markdown, first_real_article_line)
     clean_markdown = remove_lines_until(clean_markdown, first_post_title_line)
     clean_markdown = remove_lines_after(clean_markdown, last_real_article_line)
@@ -152,7 +136,7 @@ def clean_junk_sections(raw_markdown, first_real_article_line, first_post_title_
 def to_markdown(
     html: str,
     *,
-    output_dir: Path = None,
+    output_dir: Path | None = None,
     converts_to_raw_markdown=convert_to_raw_markdown,
     finds_real_article_boundaries=find_real_article_boundaries,
     cleans_junk_sections=clean_junk_sections,

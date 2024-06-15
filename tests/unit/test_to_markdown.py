@@ -5,7 +5,7 @@ import pytest
 from aloud.cli_utils import prepare_output_dir
 from aloud.console import console
 from aloud.convert import to_markdown
-from aloud.convert.to_markdown import convert_to_raw_markdown
+from aloud.convert.to_markdown.to_markdown import convert_to_raw_markdown
 from aloud.text import add_line_numbers
 from aloud.vision import (
     extract_image_link,

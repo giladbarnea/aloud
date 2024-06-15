@@ -28,12 +28,22 @@ def inject_image_descriptions_as_alt(markdown: str) -> str:
 
 
 @dispatch
-def inject_image_descriptions_as_alt(markdown, image_link_indices, image_links, image_descriptions):
+def inject_image_descriptions_as_alt(  # noqa: F811 Redefinition of unused ...
+    markdown: str,
+    image_link_indices: list[int],
+    image_links: list[str],
+    image_descriptions: list[str],
+) -> str:
     markdown_lines = markdown.splitlines()
     line_index: int
     image_link: str
     image_description: str
-    for line_index, image_link, image_description in zip(image_link_indices, image_links, image_descriptions):
+    for line_index, image_link, image_description in zip(
+        image_link_indices,
+        image_links,
+        image_descriptions,
+        strict=False,
+    ):
         line = markdown_lines[line_index]
         src_attribute_jindex = line.index('src=')
         line = line[:src_attribute_jindex] + f'alt="{image_description}" ' + line[src_attribute_jindex:]

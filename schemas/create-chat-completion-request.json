@@ -1,0 +1,172 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://json.schemastore.org/aiconfig-1.0.json",
+    "additionalProperties": {},
+    "type": "object",
+    "properties": {
+        "messages": {
+            "description": "A list of messages comprising the conversation so far. [Example Python code](https://cookbook.openai.com/examples/how_to_format_inputs_to_chatgpt_models).",
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "oneOf": [
+                    {
+                        "type": "object",
+                        "title": "System message",
+                        "properties": {
+                            "content": {
+                                "description": "The contents of the system message.",
+                                "type": "string"
+                            },
+                            "role": {
+                                "type": "string",
+                                "enum": [
+                                    "system"
+                                ],
+                                "description": "The role of the messages author, in this case `system`."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "An optional name for the participant. Provides the model information to differentiate between participants of the same role."
+                            }
+                        },
+                        "required": [
+                            "content",
+                            "role"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "title": "User message",
+                        "properties": {
+                            "content": {
+                                "description": "The contents of the user message.\n",
+                                "oneOf": [
+                                    {
+                                        "type": "string",
+                                        "description": "The text contents of the message.",
+                                        "title": "Text content"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "description": "An array of content parts with a defined type, each can be of type `text` or `image_url` when passing in images. You can pass multiple images by adding multiple `image_url` content parts. Image input is only supported when using the `gpt-4-visual-preview` model.",
+                                        "title": "Array of content parts",
+                                        "items": {
+                                            "oneOf": [
+                                                {
+                                                    "type": "object",
+                                                    "title": "Image content part",
+                                                    "properties": {
+                                                        "type": {
+                                                            "type": "string",
+                                                            "enum": [
+                                                                "image_url"
+                                                            ],
+                                                            "description": "The type of the content part."
+                                                        },
+                                                        "image_url": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "url": {
+                                                                    "type": "string",
+                                                                    "description": "Either a URL of the image or the base64 encoded image data.",
+                                                                    "format": "uri"
+                                                                },
+                                                                "detail": {
+                                                                    "type": "string",
+                                                                    "description": "Specifies the detail level of the image. Learn more in the [Vision guide](/docs/guides/vision/low-or-high-fidelity-image-understanding).",
+                                                                    "enum": [
+                                                                        "auto",
+                                                                        "low",
+                                                                        "high"
+                                                                    ],
+                                                                    "default": "auto"
+                                                                }
+                                                            },
+                                                            "required": [
+                                                                "url"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "type",
+                                                        "image_url"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "title": "Text content part",
+                                                    "properties": {
+                                                        "type": {
+                                                            "type": "string",
+                                                            "enum": [
+                                                                "text"
+                                                            ],
+                                                            "description": "The type of the content part."
+                                                        },
+                                                        "text": {
+                                                            "type": "string",
+                                                            "description": "The text content."
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "type",
+                                                        "text"
+                                                    ]
+                                                }
+                                            ],
+                                            "x-oaiExpandable": true
+                                        },
+                                        "minItems": 1
+                                    }
+                                ],
+                                "x-oaiExpandable": true
+                            },
+                            "role": {
+                                "type": "string",
+                                "enum": [
+                                    "user"
+                                ],
+                                "description": "The role of the messages author, in this case `user`."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "An optional name for the participant. Provides the model information to differentiate between participants of the same role."
+                            }
+                        },
+                        "required": [
+                            "content",
+                            "role"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "title": "Tool message",
+                        "properties": {
+                            "role": {
+                                "type": "string",
+                                "enum": [
+                                    "tool"
+                                ],
+                                "description": "The role of the messages author, in this case `tool`."
+                            },
+                            "content": {
+                                "type": "string",
+                                "description": "The contents of the tool message."
+                            },
+                            "tool_call_id": {
+                                "type": "string",
+                                "description": "Tool call that this message is responding to."
+                            }
+                        },
+                        "required": [
+                            "role",
+                            "content",
+                            "tool_call_id"
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

@@ -30,16 +30,16 @@ class TestLineNumbers:
             """
      0 │ # Title
      1 │ ## Subtitle
-     2 │ 
+     2 │
      3 │ Paragraph
-     4 │ 
+     4 │
      5 │ List:
      6 │ - Item 1
      7 │ - Item 2
      8 │ - Item 3
-     9 │ 
+     9 │
     10 │ Paragraph
-    11 │ 
+    11 │
     12 │ Table:
     13 │ | Header 1 | Header 2 |
     14 │ | -------- | -------- |
