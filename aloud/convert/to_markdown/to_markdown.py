@@ -64,6 +64,7 @@ def find_first_real_article_line(markdown: str) -> str:
         timeout=10,
     )
     first_real_article_line = chat_completion.content.splitlines()[0]
+    console.log('find_first_real_article_line: %r', first_real_article_line)
     return first_real_article_line
 
 
@@ -72,7 +73,7 @@ def find_first_post_title_line(markdown: str) -> str:
         textwrap.dedent(
             """
             You are given a markdown representation of an article from the internet, generated automatically by a tool. This means that the markdown is not perfect.
-            Often, right after the main title of the article, and just before the real actual content woudl start, and after that, things that used to be social media links, buttons and statistics would appear. Those elements are called "junk elements".
+            Often, right after the main title of the article, and just before the real actual content would start, and after that, things that used to be social media links, buttons and statistics would appear. Those elements are called "junk elements".
             Find the line where the real article starts, just after the "junk elements", and return exactly that line, and only it, without explanation or anything else.
             If the article does not contain "junk elements", your instruction stays the same: return the first line.
         
@@ -90,6 +91,7 @@ def find_first_post_title_line(markdown: str) -> str:
         timeout=10,
     )
     last_real_article_line = chat_completion.content.splitlines()[0]
+    console.log('find_first_post_title_line: %r', last_real_article_line)
     return last_real_article_line
 
 
@@ -116,6 +118,7 @@ def find_last_real_article_line(markdown: str) -> str:
         timeout=10,
     )
     last_real_article_line = chat_completion.content.splitlines()[0]
+    console.log('find_last_real_article_line: %r', last_real_article_line)
     return last_real_article_line
 
 

@@ -30,7 +30,7 @@ def remove_line_numbers(markdown: str) -> str:
 def remove_lines_until(markdown: str, line: str) -> str:
     markdown_lines = markdown.splitlines()
     line_index = index_of(markdown_lines, line)
-    console.log(f'remove_lines_until => line (idx {line_index}):\n', line)
+    console.log(f'remove_lines_until => line (idx {line_index}):\n%r', line)
     clean_markdown = '\n'.join(markdown_lines[line_index:])
     return clean_markdown
 
@@ -39,7 +39,7 @@ def remove_lines_after(markdown: str, line: str) -> str:
     markdown_lines = markdown.splitlines()
     reversed_markdown_lines = list(reversed(markdown_lines))
     line_reverse_index = index_of(reversed_markdown_lines, line)
-    console.log(f'remove_lines_after => line (idx -{line_reverse_index}):\n', line)
+    console.log(f'remove_lines_after => line (idx -{line_reverse_index}):\n%r', line)
     if line_reverse_index == 0:
         return markdown
     clean_markdown = '\n'.join(markdown_lines[:-line_reverse_index])
@@ -50,9 +50,8 @@ def index_of(string_lines: list[str], substring: str, *, case_sensitive=True) ->
     lines_equal_to_substring = [line for line in string_lines if line == substring]
     if lines_equal_to_substring:
         if len(lines_equal_to_substring) > 1:
-            console.log(
-                '⚠️ %d lines equal to substring %r' % (len(lines_equal_to_substring), substring),
-                _stack_offset=2,
+            console.warning(
+                '%d lines equal to substring %r' % (len(lines_equal_to_substring), substring),
             )
         return string_lines.index(lines_equal_to_substring[0])
     lines_starting_with_substring = [line for line in string_lines if line.startswith(substring)]

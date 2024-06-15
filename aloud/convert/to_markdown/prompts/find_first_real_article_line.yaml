@@ -1,3 +1,5 @@
+# Alternative: https://platform.openai.com/playground/p/M1QTpFYImbk9K8m8NUDypDI6
+#  "What line would you start with?"
 messages:
     -   role: system
         content: |

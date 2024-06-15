@@ -98,7 +98,7 @@ def generate_image_description(image_link: str) -> str:
             max_tokens=1000,
         )
     except BadRequestError as e:
-        console.log(f'⚠️ {type(e).__name__}: {e} │ {image_link}')
+        console.warning(f'{e!r} │ {image_link}')
         return ''
 
     image_description = chat_completion.choices[0].message.content.splitlines()[0].strip()
@@ -149,14 +149,11 @@ def get_image_link_indices(markdown: str) -> list[int]:
         .format(markdown=markdown_with_links.strip())
         .strip()
     )
-    chat_completion = oai.chat.completions.create(
+    chat_completion = oai.chat.call(
         messages=[{'role': 'system', 'content': prompt}],
-        model='gpt-4-1106-preview',
-        temperature=0,
-        stream=False,
         timeout=10,
     )
-    indices_response: str = chat_completion.choices[0].message.content.strip()
+    indices_response: str = chat_completion.content.strip()
     if indices_response == 'None':
         return []
     assert 'None' not in indices_response
@@ -191,23 +188,20 @@ def extract_image_link(markdown_line: str) -> str:
         .format(markdown_line=markdown_line.strip())
         .strip()
     )
-    chat_completion = oai.chat.completions.create(
+    chat_completion = oai.chat.call(
         messages=[{'role': 'system', 'content': prompt}],
-        model='gpt-4-1106-preview',
-        temperature=0,
-        stream=False,
         timeout=10,
     )
-    image_link = chat_completion.choices[0].message.content.splitlines()[0].strip()
+    image_link = chat_completion.content.splitlines()[0].strip()
     unquoted_image_link = unquote(image_link)
     unquoted_manual_image_link = extract_image_link_manual(markdown_line)
     if unquoted_image_link.removesuffix('/') == unquoted_manual_image_link.removesuffix('/'):
-        console.log('✔️ extract_image_link_manual(markdown_line) same as LLM:', unquoted_image_link)
+        console.log('✔️ extract_image_link_manual(markdown_line) same as LLM: %r', unquoted_image_link)
     else:
-        console.log(
-            '⚠️[yellow] extract_image_link_manual(markdown_line) different from LLM. Manual:',
+        console.warning(
+            'extract_image_link_manual(markdown_line) different from LLM. Manual: %r',
             unquoted_manual_image_link,
-            'LLM:',
+            'LLM: %r',
             unquoted_image_link,
         )
     return unquoted_image_link
