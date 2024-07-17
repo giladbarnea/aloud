@@ -1,26 +1,12 @@
-import os
-
 import pytest
 import rich.box
 from _pytest.nodes import Item
 from _pytest.reports import TestReport
 from _pytest.runner import CallInfo
-from pytest import fixture
 from rich.panel import Panel
 from rich.traceback import Traceback
 
-from aloud import convert
 from aloud.console import console
-
-
-@pytest.fixture(scope='session', autouse=True)
-def load_env():
-    # def pytest_sessionstart(session: pytest.Session):
-    import dotenv
-
-    dotenv.load_dotenv()
-    os.environ.setdefault('COLUMNS', '160')
-    os.environ.update(FORCE_COLOR='true')
 
 
 def pytest_runtest_makereport(item: Item, call: CallInfo) -> TestReport | None:
@@ -66,24 +52,7 @@ def pytest_report_teststatus(report: TestReport, config):
     return None
 
 
-@fixture(scope='session')
-def to_html():
-    return convert.to_html
-
-
-@fixture(scope='session')
-def get_markdown():
-    return get_markdown_fixture
-
-
-def get_markdown_fixture(url_or_html: str, *, remove_head: bool = True) -> str:
-    from aloud.convert.to_markdown import convert_to_raw_markdown
-
-    html = convert.to_html(url_or_html, remove_head=remove_head)
-    return convert_to_raw_markdown(html)
-
-
-@fixture(scope='function')
+@pytest.fixture(scope='function')
 def current_test_name(request):
     return request.node.name.replace('[', '_').replace(']', '_')
 

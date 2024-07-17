@@ -6,8 +6,8 @@ from aloud.oai import oai
 ARTICLE_URL = 'https://www.kpassa.me/posts/google'
 
 
-def test_generate_audio(get_markdown):
-    markdown = get_markdown(ARTICLE_URL)
+def test_generate_audio(to_markdown):
+    markdown = to_markdown(ARTICLE_URL)
     prompt = (
         textwrap.dedent(
             """

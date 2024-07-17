@@ -5,20 +5,19 @@ import pytest
 from aloud.cli_utils import prepare_output_dir
 from aloud.console import console
 from aloud.convert import to_markdown
-from aloud.convert.to_markdown.to_markdown import convert_to_raw_markdown
+from aloud.convert.to_markdown.from_html import convert_to_raw_markdown
 from aloud.text import add_line_numbers
 from aloud.vision import (
-    extract_image_link,
-    extract_image_links,
-    generate_image_description,
-    get_image_link_indices,
+    _extract_image_link,
+    _extract_image_links,
+    _get_image_link_indices,
 )
 
 p = console.print
 
 
 @pytest.mark.parametrize(
-    'line,link',
+    ('given_line', 'extracted_link'),
     [
         (
             "  0 │ [ <img src='https://substackcdn.com/image/fetch/w_96,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fbucketeer-e05bbc84-baa3-437e-9518-adb32be77984.s3.amazonaws.com%2Fpublic%2Fimages%2Fcd2ee4f7-3e71-42f0-92eb-4d3018127e08_1024x1024.png' /> ](</>)",
@@ -54,9 +53,9 @@ p = console.print
         ),
     ],
 )
-def test_extract_image_link(line, link):
-    actual_link = extract_image_link(line)
-    assert actual_link == link
+def test_extract_image_link(given_line: str, extracted_link: str):
+    actual_link = _extract_image_link(given_line)
+    assert actual_link == extracted_link
 
 
 def test_get_image_link_indices():
@@ -67,7 +66,7 @@ def test_get_image_link_indices():
     (temp_dir / 'raw_markdown.md').write_text(raw_markdown)
     markdown_with_line_numbers = add_line_numbers(raw_markdown)
     (temp_dir / 'markdown_with_line_numbers.md').write_text(markdown_with_line_numbers)
-    image_links_indices = get_image_link_indices(markdown_with_line_numbers)
+    image_links_indices = _get_image_link_indices(markdown_with_line_numbers)
     console.log('image_links_indices:', image_links_indices)
     expected = [
         0,
@@ -100,7 +99,7 @@ def test_extract_image_links():
     (temp_dir / 'raw_markdown.md').write_text(raw_markdown)
     markdown_with_line_numbers = add_line_numbers(raw_markdown)
     (temp_dir / 'markdown_with_line_numbers.md').write_text(markdown_with_line_numbers)
-    image_links = extract_image_links(markdown_with_line_numbers)
+    image_links = _extract_image_links(markdown_with_line_numbers)
     console.log('image_links:', image_links)
     expected = [
         'https://bucketeer-e05bbc84-baa3-437e-9518-adb32be77984.s3.amazonaws.com/public/images/cd2ee4f7-3e71-42f0-92eb-4d3018127e08_1024x1024.png',
@@ -125,14 +124,6 @@ def test_extract_image_links():
     assert image_links == expected
 
 
-def test_generate_image_description():
-    image_url = (
-        'https://substack-post-media.s3.amazonaws.com/public/images/98f562a1-ece9-4e31-bafd-363da13fa741_667x571.png'
-    )
-    image_description = generate_image_description(image_url)
-    assert image_description
-
-
 def test_links_and_images__reshaping_the_tree_rebuilding_organizations(current_test_name):
     """https://www.oneusefulthing.org/p/reshaping-the-tree-rebuilding-organizations"""
     thing = 'tests/data/reshaping-the-tree-rebuilding-organizations/reshaping-the-tree-rebuilding-organizations.html'
@@ -154,7 +145,7 @@ def test_links_and_images__reshaping_the_tree_rebuilding_organizations(current_t
     )
 
 
-def test_langchain_promptlayer():  # fails (Jan 20)
+def test_langchain_promptlayer():  # fails (Jan). passes July with tool calling
     promptlayer_html = Path('tests/data/promptlayer/promptlayer.html').read_text()
     markdown = to_markdown(promptlayer_html)
     markdown_lines = markdown.splitlines()

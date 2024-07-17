@@ -10,13 +10,13 @@ from aloud.console import console
 
 def process(
     thing: str,
-    only_speakable: bool = False,
-    only_audio: bool = False,
+    only_speakable: bool = False,  # noqa: FBT001,FBT002 Boolean positional
+    only_audio: bool = False,  # noqa: FBT001,FBT002 Boolean positional
     voice: models.VoiceOption = models.VoiceOption.default,
     voice_model: models.VoiceModelOption = models.VoiceModelOption.default,
     voice_response_format: models.VoiceResponseFormatOption = models.VoiceResponseFormatOption.default,
     output_dir: models.OutputDir = models.OutputDir.default,
-    openai_api_key: models.OpenAIKeyOption = None,
+    openai_api_key: models.OpenAIKeyOption | None = None,  # noqa: ARG001 Unused argument
 ) -> bytes:
     assert_args_ok(only_audio, only_speakable, output_dir)
     output_dir = prepare_output_dir(thing, output_dir)

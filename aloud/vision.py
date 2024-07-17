@@ -1,5 +1,4 @@
 import textwrap
-from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import unquote
 
 from openai import BadRequestError
@@ -7,21 +6,25 @@ from plum import dispatch
 
 from aloud.console import console
 from aloud.oai import oai
+from aloud.settings import settings
 from aloud.text import (
     LINE_NUMBER_SEPARATOR,
     add_line_numbers,
     has_line_numbers,
     remove_line_numbers,
 )
+from aloud.thread_pool_executor import ThreadPoolExecutor
 
 
 @console.with_status('Generating and injecting image descriptions...')
 @dispatch
 def inject_image_descriptions_as_alt(markdown: str) -> str:
+    if not settings.parse_images:
+        return markdown
     markdown_with_line_numbers = add_line_numbers(markdown)
-    image_link_indices: list[int] = get_image_link_indices(markdown_with_line_numbers)
-    image_links: list[str] = extract_image_links(markdown_with_line_numbers, image_link_indices)
-    image_descriptions: list[str] = generate_image_descriptions(image_links)
+    image_link_indices: list[int] = _get_image_link_indices(markdown_with_line_numbers)
+    image_links: list[str] = _extract_image_links(markdown_with_line_numbers, image_link_indices)
+    image_descriptions: list[str] = _generate_image_descriptions(image_links)
     markdown = remove_line_numbers(markdown_with_line_numbers)
     markdown = inject_image_descriptions_as_alt(markdown, image_link_indices, image_links, image_descriptions)
     return markdown
@@ -34,6 +37,8 @@ def inject_image_descriptions_as_alt(  # noqa: F811 Redefinition of unused ...
     image_links: list[str],
     image_descriptions: list[str],
 ) -> str:
+    if not settings.parse_images:
+        return markdown
     markdown_lines = markdown.splitlines()
     line_index: int
     image_link: str
@@ -53,19 +58,19 @@ def inject_image_descriptions_as_alt(  # noqa: F811 Redefinition of unused ...
     return markdown
 
 
-def generate_image_descriptions(image_links: list[str]) -> list[str]:
+def _generate_image_descriptions(image_links: list[str]) -> list[str]:
     if not image_links:
         return []
     image_description_futures = []
     with ThreadPoolExecutor(max_workers=len(image_links)) as executor:
         for image_link in image_links:
-            future = executor.submit(generate_image_description, image_link)
+            future = executor.submit(_generate_image_description, image_link)
             image_description_futures.append(future)
     image_descriptions = [future.result() for future in image_description_futures]
     return image_descriptions
 
 
-def generate_image_description(image_link: str) -> str:
+def _generate_image_description(image_link: str) -> str:
     prompt = (
         textwrap.dedent(
             """
@@ -107,12 +112,12 @@ def generate_image_description(image_link: str) -> str:
 
 @dispatch
 def extract_image_links(markdown: str) -> list[str]:
-    image_link_indices = get_image_link_indices(markdown)
-    return extract_image_links(markdown, image_link_indices)
+    image_link_indices = _get_image_link_indices(markdown)
+    return _extract_image_links(markdown, image_link_indices)
 
 
 @dispatch
-def extract_image_links(markdown: str, image_link_indices: list[int]) -> list[str]:
+def _extract_image_links(markdown: str, image_link_indices: list[int]) -> list[str]:
     if not image_link_indices:
         return []
     image_link_futures = []
@@ -120,15 +125,15 @@ def extract_image_links(markdown: str, image_link_indices: list[int]) -> list[st
         markdown_lines = markdown.splitlines()
         for index in image_link_indices:
             line = markdown_lines[index]
-            future = executor.submit(extract_image_link, line)
+            future = executor.submit(_extract_image_link, line)
             image_link_futures.append(future)
     image_links = [future.result() for future in image_link_futures]
     return image_links
 
 
-def get_image_link_indices(markdown: str) -> list[int]:
+def _get_image_link_indices(markdown: str) -> list[int]:
     assert has_line_numbers(markdown)
-    lines_with_links = get_lines_with_links(markdown)
+    lines_with_links = _get_lines_with_links(markdown)
     if not lines_with_links:
         return []
     markdown_with_links = '\n'.join(lines_with_links)
@@ -163,7 +168,7 @@ def get_image_link_indices(markdown: str) -> list[int]:
     return image_link_indices
 
 
-def get_lines_with_links(markdown: str) -> list[str]:
+def _get_lines_with_links(markdown: str) -> list[str]:
     markdown_lines = markdown.splitlines()
     lines_with_links = []
     for line in markdown_lines:
@@ -172,7 +177,7 @@ def get_lines_with_links(markdown: str) -> list[str]:
     return lines_with_links
 
 
-def extract_image_link(markdown_line: str) -> str:
+def _extract_image_link(markdown_line: str) -> str:
     prompt = (
         textwrap.dedent(
             """
@@ -194,20 +199,19 @@ def extract_image_link(markdown_line: str) -> str:
     )
     image_link = chat_completion.content.splitlines()[0].strip()
     unquoted_image_link = unquote(image_link)
-    unquoted_manual_image_link = extract_image_link_manual(markdown_line)
+    unquoted_manual_image_link = _extract_image_link_manual(markdown_line)
     if unquoted_image_link.removesuffix('/') == unquoted_manual_image_link.removesuffix('/'):
-        console.log('✔️ extract_image_link_manual(markdown_line) same as LLM: %r', unquoted_image_link)
+        console.log('✔️ _extract_image_link_manual(markdown_line) same as LLM: %r', unquoted_image_link)
     else:
         console.warning(
-            'extract_image_link_manual(markdown_line) different from LLM. Manual: %r',
+            '_extract_image_link_manual(markdown_line) different from LLM. Manual: %r │ LLM: %r',
             unquoted_manual_image_link,
-            'LLM: %r',
             unquoted_image_link,
         )
     return unquoted_image_link
 
 
-def extract_image_link_manual(markdown_line: str) -> str:
+def _extract_image_link_manual(markdown_line: str) -> str:
     line = markdown_line.strip()
     if 'http' not in line:
         return markdown_line

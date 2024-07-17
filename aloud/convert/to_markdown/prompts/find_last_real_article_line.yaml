@@ -1,0 +1,22 @@
+messages:
+    - role: system
+      content: |
+        You are given a markdown representation of an article from the internet, generated automatically by a tool. This means that the markdown is not perfect.
+        Often, right after the main title of the article, and just before the real actual content would start, and after that, things that used to be social media links, buttons and statistics would appear. Those elements are called "junk elements".
+        Find the line where the real article starts, just after the "junk elements", and return exactly that line, and only it, without explanation or anything else.
+    - role: user
+      content: "{markdown}"
+tool_choice: required
+tools:
+    - type: function
+      function:
+          name: find_last_real_article_line
+          description: Extract the last real article line from the markdown.
+          parameters:
+              properties:
+                  type: object
+                  line:
+                      type: string
+                      description: The real article line.
+                  required:
+                      - line

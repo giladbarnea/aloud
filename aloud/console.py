@@ -1,7 +1,5 @@
 import builtins
 import logging
-import os
-import sys
 from collections.abc import Callable
 from typing import ParamSpec, Self, TypeVar
 
@@ -14,11 +12,6 @@ from rich.live import Live
 from rich.logging import RichHandler
 from rich.status import Status as RichStatus
 from rich.style import Style, StyleType
-
-
-def running_pytest() -> bool:
-    return os.getenv('PYTEST_CURRENT_TEST') or 'pytest' in sys.argv[0]
-
 
 P = ParamSpec('P')
 R = TypeVar('R')
@@ -144,7 +137,9 @@ class Console(RichConsole):
         refresh_per_second: float = 12.5,
     ) -> Callable[[Callable[P, R]], Callable[P, R]]:
         def decorator(func: Callable[P, R]) -> Callable[P, R]:
-            if running_pytest():
+            from aloud.settings import dev_settings
+
+            if dev_settings.running_pytest:
                 return func
 
             def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:

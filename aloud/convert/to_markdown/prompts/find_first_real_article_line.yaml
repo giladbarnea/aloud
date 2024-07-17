@@ -6,9 +6,6 @@ messages:
             You are given a markdown representation of an article from the internet, generated automatically by a tool. This means that the markdown is not perfect.
             Often, the markdown will start with things that used to be the website's navigation bar, social media links, etc, and only after that will the actual article start, usually with a title.
             Find the line where the real article starts, and return exactly that line, and only it, without explanation or anything else.
-            
-            The article's markdown representation is:
-            
-            {markdown}
-    
-    
+    -   role: user
+        content: "{markdown}"
+

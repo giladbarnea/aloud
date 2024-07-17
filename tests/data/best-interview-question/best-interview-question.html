@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<!-- saved from url=(0075)https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/ -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>The best engineering interview question I've ever gotten, Part 2 – Arthur O'Dwyer – Stuff mostly about C++</title>
+
+        
+    
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+    
+    <meta name="description" content="Before you read this post — which contains spoilers — you should read
+“The best engineering interview question I’ve ever gotten, Part 1”
+(2022-01-06).
+
+">
+    <meta property="og:description" content="Before you read this post — which contains spoilers — you should read
+“The best engineering interview question I’ve ever gotten, Part 1”
+(2022-01-06).
+
+">
+    
+
+    <meta name="author" content="Arthur O’Dwyer">
+    <meta property="og:site_name" content="Arthur O’Dwyer">
+    
+    <meta property="og:title" content="The best engineering interview question I’ve ever gotten, Part 2">
+    <meta property="twitter:title" content="The best engineering interview question I’ve ever gotten, Part 2">
+    
+
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <style class="anchorjs"></style><link rel="stylesheet" type="text/css" href="./best-interview-question_files/style.css">
+    <link rel="stylesheet" type="text/css" href="./best-interview-question_files/font-awesome.min.css">
+    <link rel="alternate" type="application/rss+xml" title="Arthur O&#39;Dwyer - Stuff mostly about C++" href="https://quuxplusone.github.io/blog/feed.xml">
+
+    <!-- Created with Jekyll Now - http://github.com/barryclark/jekyll-now -->
+  <style type="text/css">.CtxtMenu_InfoClose {  top:.2em; right:.2em;}
+.CtxtMenu_InfoContent {  overflow:auto; text-align:left; font-size:80%;  padding:.4em .6em; border:1px inset; margin:1em 0px;  max-height:20em; max-width:30em; background-color:#EEEEEE;  white-space:normal;}
+.CtxtMenu_Info.CtxtMenu_MousePost {outline:none;}
+.CtxtMenu_Info {  position:fixed; left:50%; width:auto; text-align:center;  border:3px outset; padding:1em 2em; background-color:#DDDDDD;  color:black;  cursor:default; font-family:message-box; font-size:120%;  font-style:normal; text-indent:0; text-transform:none;  line-height:normal; letter-spacing:normal; word-spacing:normal;  word-wrap:normal; white-space:nowrap; float:none; z-index:201;  border-radius: 15px;                     /* Opera 10.5 and IE9 */  -webkit-border-radius:15px;               /* Safari and Chrome */  -moz-border-radius:15px;                  /* Firefox */  -khtml-border-radius:15px;                /* Konqueror */  box-shadow:0px 10px 20px #808080;         /* Opera 10.5 and IE9 */  -webkit-box-shadow:0px 10px 20px #808080; /* Safari 3 & Chrome */  -moz-box-shadow:0px 10px 20px #808080;    /* Forefox 3.5 */  -khtml-box-shadow:0px 10px 20px #808080;  /* Konqueror */  filter:progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color="gray", Positive="true"); /* IE */}
+</style><style type="text/css">.CtxtMenu_MenuClose {  position:absolute;  cursor:pointer;  display:inline-block;  border:2px solid #AAA;  border-radius:18px;  -webkit-border-radius: 18px;             /* Safari and Chrome */  -moz-border-radius: 18px;                /* Firefox */  -khtml-border-radius: 18px;              /* Konqueror */  font-family: "Courier New", Courier;  font-size:24px;  color:#F0F0F0}
+.CtxtMenu_MenuClose span {  display:block; background-color:#AAA; border:1.5px solid;  border-radius:18px;  -webkit-border-radius: 18px;             /* Safari and Chrome */  -moz-border-radius: 18px;                /* Firefox */  -khtml-border-radius: 18px;              /* Konqueror */  line-height:0;  padding:8px 0 6px     /* may need to be browser-specific */}
+.CtxtMenu_MenuClose:hover {  color:white!important;  border:2px solid #CCC!important}
+.CtxtMenu_MenuClose:hover span {  background-color:#CCC!important}
+.CtxtMenu_MenuClose:hover:focus {  outline:none}
+</style><style type="text/css">.CtxtMenu_Menu {  position:absolute;  background-color:white;  color:black;  width:auto; padding:5px 0px;  border:1px solid #CCCCCC; margin:0; cursor:default;  font: menu; text-align:left; text-indent:0; text-transform:none;  line-height:normal; letter-spacing:normal; word-spacing:normal;  word-wrap:normal; white-space:nowrap; float:none; z-index:201;  border-radius: 5px;                     /* Opera 10.5 and IE9 */  -webkit-border-radius: 5px;             /* Safari and Chrome */  -moz-border-radius: 5px;                /* Firefox */  -khtml-border-radius: 5px;              /* Konqueror */  box-shadow:0px 10px 20px #808080;         /* Opera 10.5 and IE9 */  -webkit-box-shadow:0px 10px 20px #808080; /* Safari 3 & Chrome */  -moz-box-shadow:0px 10px 20px #808080;    /* Forefox 3.5 */  -khtml-box-shadow:0px 10px 20px #808080;  /* Konqueror */}
+.CtxtMenu_MenuItem {  padding: 1px 2em;  background:transparent;}
+.CtxtMenu_MenuArrow {  position:absolute; right:.5em; padding-top:.25em; color:#666666;  font-family: null; font-size: .75em}
+.CtxtMenu_MenuActive .CtxtMenu_MenuArrow {color:white}
+.CtxtMenu_MenuArrow.CtxtMenu_RTL {left:.5em; right:auto}
+.CtxtMenu_MenuCheck {  position:absolute; left:.7em;  font-family: null}
+.CtxtMenu_MenuCheck.CtxtMenu_RTL { right:.7em; left:auto }
+.CtxtMenu_MenuRadioCheck {  position:absolute; left: .7em;}
+.CtxtMenu_MenuRadioCheck.CtxtMenu_RTL {  right: .7em; left:auto}
+.CtxtMenu_MenuInputBox {  padding-left: 1em; right:.5em; color:#666666;  font-family: null;}
+.CtxtMenu_MenuInputBox.CtxtMenu_RTL {  left: .1em;}
+.CtxtMenu_MenuComboBox {  left:.1em; padding-bottom:.5em;}
+.CtxtMenu_MenuSlider {  left: .1em;}
+.CtxtMenu_SliderValue {  position:absolute; right:.1em; padding-top:.25em; color:#333333;  font-size: .75em}
+.CtxtMenu_SliderBar {  outline: none; background: #d3d3d3}
+.CtxtMenu_MenuLabel {  padding: 1px 2em 3px 1.33em;  font-style:italic}
+.CtxtMenu_MenuRule {  border-top: 1px solid #DDDDDD;  margin: 4px 3px;}
+.CtxtMenu_MenuDisabled {  color:GrayText}
+.CtxtMenu_MenuActive {  background-color: #606872;  color: white;}
+.CtxtMenu_MenuDisabled:focus {  background-color: #E8E8E8}
+.CtxtMenu_MenuLabel:focus {  background-color: #E8E8E8}
+.CtxtMenu_ContextMenu:focus {  outline:none}
+.CtxtMenu_ContextMenu .CtxtMenu_MenuItem:focus {  outline:none}
+.CtxtMenu_SelectionMenu {  position:relative; float:left;  border-bottom: none; -webkit-box-shadow:none; -webkit-border-radius:0px; }
+.CtxtMenu_SelectionItem {  padding-right: 1em;}
+.CtxtMenu_Selection {  right: 40%; width:50%; }
+.CtxtMenu_SelectionBox {  padding: 0em; max-height:20em; max-width: none;  background-color:#FFFFFF;}
+.CtxtMenu_SelectionDivider {  clear: both; border-top: 2px solid #000000;}
+.CtxtMenu_Menu .CtxtMenu_MenuClose {  top:-10px; left:-10px}
+</style><style id="MJX-CHTML-styles">
+mjx-container[jax="CHTML"] {
+  line-height: 0;
+}
+
+mjx-container [space="1"] {
+  margin-left: .111em;
+}
+
+mjx-container [space="2"] {
+  margin-left: .167em;
+}
+
+mjx-container [space="3"] {
+  margin-left: .222em;
+}
+
+mjx-container [space="4"] {
+  margin-left: .278em;
+}
+
+mjx-container [space="5"] {
+  margin-left: .333em;
+}
+
+mjx-container [rspace="1"] {
+  margin-right: .111em;
+}
+
+mjx-container [rspace="2"] {
+  margin-right: .167em;
+}
+
+mjx-container [rspace="3"] {
+  margin-right: .222em;
+}
+
+mjx-container [rspace="4"] {
+  margin-right: .278em;
+}
+
+mjx-container [rspace="5"] {
+  margin-right: .333em;
+}
+
+mjx-container [size="s"] {
+  font-size: 70.7%;
+}
+
+mjx-container [size="ss"] {
+  font-size: 50%;
+}
+
+mjx-container [size="Tn"] {
+  font-size: 60%;
+}
+
+mjx-container [size="sm"] {
+  font-size: 85%;
+}
+
+mjx-container [size="lg"] {
+  font-size: 120%;
+}
+
+mjx-container [size="Lg"] {
+  font-size: 144%;
+}
+
+mjx-container [size="LG"] {
+  font-size: 173%;
+}
+
+mjx-container [size="hg"] {
+  font-size: 207%;
+}
+
+mjx-container [size="HG"] {
+  font-size: 249%;
+}
+
+mjx-container [width="full"] {
+  width: 100%;
+}
+
+mjx-box {
+  display: inline-block;
+}
+
+mjx-block {
+  display: block;
+}
+
+mjx-itable {
+  display: inline-table;
+}
+
+mjx-row {
+  display: table-row;
+}
+
+mjx-row > * {
+  display: table-cell;
+}
+
+mjx-mtext {
+  display: inline-block;
+}
+
+mjx-mstyle {
+  display: inline-block;
+}
+
+mjx-merror {
+  display: inline-block;
+  color: red;
+  background-color: yellow;
+}
+
+mjx-mphantom {
+  visibility: hidden;
+}
+
+_::-webkit-full-page-media, _:future, :root mjx-container {
+  will-change: opacity;
+}
+
+mjx-assistive-mml {
+  position: absolute !important;
+  top: 0px;
+  left: 0px;
+  clip: rect(1px, 1px, 1px, 1px);
+  padding: 1px 0px 0px 0px !important;
+  border: 0px !important;
+  display: block !important;
+  width: auto !important;
+  overflow: hidden !important;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+mjx-assistive-mml[display="block"] {
+  width: 100% !important;
+}
+
+mjx-math {
+  display: inline-block;
+  text-align: left;
+  line-height: 0;
+  text-indent: 0;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 100%;
+  font-size-adjust: none;
+  letter-spacing: normal;
+  border-collapse: collapse;
+  word-wrap: normal;
+  word-spacing: normal;
+  white-space: nowrap;
+  direction: ltr;
+  padding: 1px 0;
+}
+
+mjx-container[jax="CHTML"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="CHTML"][display="true"][width="full"] {
+  display: flex;
+}
+
+mjx-container[jax="CHTML"][display="true"] mjx-math {
+  padding: 0;
+}
+
+mjx-container[jax="CHTML"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="CHTML"][justify="right"] {
+  text-align: right;
+}
+
+mjx-mi {
+  display: inline-block;
+  text-align: left;
+}
+
+mjx-c {
+  display: inline-block;
+}
+
+mjx-utext {
+  display: inline-block;
+  padding: .75em 0 .2em 0;
+}
+
+mjx-c::before {
+  display: block;
+  width: 0;
+}
+
+.MJX-TEX {
+  font-family: MJXZERO, MJXTEX;
+}
+
+.TEX-B {
+  font-family: MJXZERO, MJXTEX-B;
+}
+
+.TEX-I {
+  font-family: MJXZERO, MJXTEX-I;
+}
+
+.TEX-MI {
+  font-family: MJXZERO, MJXTEX-MI;
+}
+
+.TEX-BI {
+  font-family: MJXZERO, MJXTEX-BI;
+}
+
+.TEX-S1 {
+  font-family: MJXZERO, MJXTEX-S1;
+}
+
+.TEX-S2 {
+  font-family: MJXZERO, MJXTEX-S2;
+}
+
+.TEX-S3 {
+  font-family: MJXZERO, MJXTEX-S3;
+}
+
+.TEX-S4 {
+  font-family: MJXZERO, MJXTEX-S4;
+}
+
+.TEX-A {
+  font-family: MJXZERO, MJXTEX-A;
+}
+
+.TEX-C {
+  font-family: MJXZERO, MJXTEX-C;
+}
+
+.TEX-CB {
+  font-family: MJXZERO, MJXTEX-CB;
+}
+
+.TEX-FR {
+  font-family: MJXZERO, MJXTEX-FR;
+}
+
+.TEX-FRB {
+  font-family: MJXZERO, MJXTEX-FRB;
+}
+
+.TEX-SS {
+  font-family: MJXZERO, MJXTEX-SS;
+}
+
+.TEX-SSB {
+  font-family: MJXZERO, MJXTEX-SSB;
+}
+
+.TEX-SSI {
+  font-family: MJXZERO, MJXTEX-SSI;
+}
+
+.TEX-SC {
+  font-family: MJXZERO, MJXTEX-SC;
+}
+
+.TEX-T {
+  font-family: MJXZERO, MJXTEX-T;
+}
+
+.TEX-V {
+  font-family: MJXZERO, MJXTEX-V;
+}
+
+.TEX-VB {
+  font-family: MJXZERO, MJXTEX-VB;
+}
+
+mjx-stretchy-v mjx-c, mjx-stretchy-h mjx-c {
+  font-family: MJXZERO, MJXTEX-S1, MJXTEX-S4, MJXTEX, MJXTEX-A ! important;
+}
+
+@font-face /* 0 */ {
+  font-family: MJXZERO;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Zero.woff") format("woff");
+}
+
+@font-face /* 1 */ {
+  font-family: MJXTEX;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Main-Regular.woff") format("woff");
+}
+
+@font-face /* 2 */ {
+  font-family: MJXTEX-B;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Main-Bold.woff") format("woff");
+}
+
+@font-face /* 3 */ {
+  font-family: MJXTEX-I;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Math-Italic.woff") format("woff");
+}
+
+@font-face /* 4 */ {
+  font-family: MJXTEX-MI;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Main-Italic.woff") format("woff");
+}
+
+@font-face /* 5 */ {
+  font-family: MJXTEX-BI;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Math-BoldItalic.woff") format("woff");
+}
+
+@font-face /* 6 */ {
+  font-family: MJXTEX-S1;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Size1-Regular.woff") format("woff");
+}
+
+@font-face /* 7 */ {
+  font-family: MJXTEX-S2;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Size2-Regular.woff") format("woff");
+}
+
+@font-face /* 8 */ {
+  font-family: MJXTEX-S3;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Size3-Regular.woff") format("woff");
+}
+
+@font-face /* 9 */ {
+  font-family: MJXTEX-S4;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Size4-Regular.woff") format("woff");
+}
+
+@font-face /* 10 */ {
+  font-family: MJXTEX-A;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_AMS-Regular.woff") format("woff");
+}
+
+@font-face /* 11 */ {
+  font-family: MJXTEX-C;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Calligraphic-Regular.woff") format("woff");
+}
+
+@font-face /* 12 */ {
+  font-family: MJXTEX-CB;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Calligraphic-Bold.woff") format("woff");
+}
+
+@font-face /* 13 */ {
+  font-family: MJXTEX-FR;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Fraktur-Regular.woff") format("woff");
+}
+
+@font-face /* 14 */ {
+  font-family: MJXTEX-FRB;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Fraktur-Bold.woff") format("woff");
+}
+
+@font-face /* 15 */ {
+  font-family: MJXTEX-SS;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_SansSerif-Regular.woff") format("woff");
+}
+
+@font-face /* 16 */ {
+  font-family: MJXTEX-SSB;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_SansSerif-Bold.woff") format("woff");
+}
+
+@font-face /* 17 */ {
+  font-family: MJXTEX-SSI;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_SansSerif-Italic.woff") format("woff");
+}
+
+@font-face /* 18 */ {
+  font-family: MJXTEX-SC;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Script-Regular.woff") format("woff");
+}
+
+@font-face /* 19 */ {
+  font-family: MJXTEX-T;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Typewriter-Regular.woff") format("woff");
+}
+
+@font-face /* 20 */ {
+  font-family: MJXTEX-V;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Vector-Regular.woff") format("woff");
+}
+
+@font-face /* 21 */ {
+  font-family: MJXTEX-VB;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Vector-Bold.woff") format("woff");
+}
+
+mjx-c.mjx-c1D458.TEX-I::before {
+  padding: 0.694em 0.521em 0.011em 0;
+  content: "k";
+}
+</style></head>
+
+  <body style="">
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="https://quuxplusone.github.io/blog/" class="site-avatar"><img src="./best-interview-question_files/pumpkin-toss.jpg"></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="https://quuxplusone.github.io/blog/"><p id="arthur-o-dwyer"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#arthur-o-dwyer" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>Arthur O’Dwyer</p>
+</a></h1>
+            <p class="site-description" id=""><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a></p><p id="stuff-mostly-about-c"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#stuff-mostly-about-c" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>Stuff mostly about C++</p>
+<p id="-1"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#-1" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a></p>
+          </div>
+
+          <nav>
+            <a href="https://quuxplusone.github.io/blog/">Recent</a>
+            <a href="https://quuxplusone.github.io/blog/archive">Date</a>
+            <a href="https://quuxplusone.github.io/blog/tags">Tag</a>
+            <a href="https://quuxplusone.github.io/blog/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <div id="main" role="main" class="container">
+      <article class="post">
+  <h1><a href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/"><p id="the-best-engineering-interview-q"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#the-best-engineering-interview-q" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>The best engineering interview question I’ve ever gotten, Part 2</p>
+</a></h1>
+
+  <div class="entry">
+    <p id="before-you-read-this-post-which"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#before-you-read-this-post-which" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>Before you read this post — which contains spoilers — you should read
+<a href="https://quuxplusone.github.io/blog/2022/01/06/memcached-interview/">“The best engineering interview question I’ve ever gotten, Part 1”</a>
+(2022-01-06).</p>
+
+<h2 id="the-challenge-modifying-memcached"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#the-challenge-modifying-memcached" aria-label="Anchor" data-anchorjs-icon="" style="font-style: normal; font-variant: normal; font-kerning: auto; font-optical-sizing: auto; font-feature-settings: normal; font-variation-settings: normal; font-weight: normal; font-stretch: normal; font-size: 1em; line-height: inherit; font-family: anchorjs-icons; position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>The challenge: Modifying memcached</h2>
+
+<p id="via-its-incr-and-decr-commands-m"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#via-its-incr-and-decr-commands-m" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>Via its <code class="language-plaintext highlighter-rouge">incr</code> and <code class="language-plaintext highlighter-rouge">decr</code> commands, memcached provides a built-in way to
+atomically add <mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" tabindex="0" ctxtmenu_counter="0" style="font-size: 118.4%; position: relative;"><mjx-math class="MJX-TEX" aria-hidden="true"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D458 TEX-I"></mjx-c></mjx-mi></mjx-math><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><mi>k</mi></math></mjx-assistive-mml></mjx-container> to a number. But it doesn’t provide other arithmetic
+operations; in particular, there is no “atomic multiply by <mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" tabindex="0" ctxtmenu_counter="1" style="font-size: 118.4%; position: relative;"><mjx-math class="MJX-TEX" aria-hidden="true"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D458 TEX-I"></mjx-c></mjx-mi></mjx-math><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><mi>k</mi></math></mjx-assistive-mml></mjx-container>” operation.</p>
+
+<p id="your-programming-challenge-add-a"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#your-programming-challenge-add-a" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>Your programming challenge: <b>Add a <code class="language-plaintext highlighter-rouge">mult</code> command to memcached.</b></p>
+
+<h2 id="analysis"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#analysis" aria-label="Anchor" data-anchorjs-icon="" style="font-style: normal; font-variant: normal; font-kerning: auto; font-optical-sizing: auto; font-feature-settings: normal; font-variation-settings: normal; font-weight: normal; font-stretch: normal; font-size: 1em; line-height: inherit; font-family: anchorjs-icons; position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>Analysis</h2>
+
+<p id="this-is-a-great-engineering-inte"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#this-is-a-great-engineering-inte" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>This is a great engineering interview problem because it pretty cleanly
+partitions the candidate pool into three different types:</p>
+
+<p id="type-0-is-just-completely-stumpe"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#type-0-is-just-completely-stumpe" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>Type 0 is just completely stumped by the challenge of interacting with a
+real codebase. I don’t think many people in this category would get all
+the way to this point in the interview process anyway. But if you discover
+that the candidate is in this group, well, don’t hire them.</p>
+
+<blockquote>
+  <p id="by-the-way-memsql-in-2013-was-do"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#by-the-way-memsql-in-2013-was-do" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>By the way, MemSQL-in-2013 was doing deeply arcane and high-performance C++11,
+so the fact that this challenge incidentally requires fluency in C was a plus,
+not a minus, for their purposes. If your codebase is all Python and Go,
+you probably wouldn’t use memcached for your interview challenge.</p>
+</blockquote>
+
+<p id="type-1-looks-at-the-problem-and"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#type-1-looks-at-the-problem-and" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>Type 1 looks at the problem and says, “Ah! I know just how to do this!
+Multiplication is just repeated addition, and we already have a
+ready-made addition subroutine in the form of <code class="language-plaintext highlighter-rouge">incr</code>. So I’ll just
+build on top of that. Ah, but instead of adding a constant to <code class="language-plaintext highlighter-rouge">x</code>’s value,
+we need to add <code class="language-plaintext highlighter-rouge">x</code>’s value to itself… and the whole thing needs to be atomic.
+Let’s look at how the locking works…” They spend all three hours getting
+deeper and deeper down various rabbit holes, and never produce anything that works.
+Candidates in this group don’t get hired.</p>
+
+<p id="type-2-looks-at-the-problem-and"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#type-2-looks-at-the-problem-and" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>Type 2 looks at the problem and says, “Ah! I know just how to do this!
+Multiplication is just like addition, except wherever addition does <code class="language-plaintext highlighter-rouge">+</code>,
+I should do <code class="language-plaintext highlighter-rouge">*</code>.” So they copy-and-paste, change all the <code class="language-plaintext highlighter-rouge">+</code>s to
+<code class="language-plaintext highlighter-rouge">*</code>s, and they’re done in 90 minutes. Candidates in this group stand a
+really good chance of being hired.</p>
+
+<p id="the-best-candidates-will-notice"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#the-best-candidates-will-notice" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>The best candidates will notice they’ve
+got lots of time left and polish their submission, for example by making
+sure the formatting is consistent, adding unit tests, or revisiting
+their “design decisions” to make sure they can justify them if asked.</p>
+
+<h2 id="walkthrough"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#walkthrough" aria-label="Anchor" data-anchorjs-icon="" style="font-style: normal; font-variant: normal; font-kerning: auto; font-optical-sizing: auto; font-feature-settings: normal; font-variation-settings: normal; font-weight: normal; font-stretch: normal; font-size: 1em; line-height: inherit; font-family: anchorjs-icons; position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>Walkthrough</h2>
+
+<p id="to-make-sure-my-time-estimates-w"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#to-make-sure-my-time-estimates-w" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>To make sure my time estimates were in the right ballpark,
+yesterday afternoon I did the whole thing myself.</p>
+
+<blockquote>
+  <p id="this-section-is-likely-to-bore-a"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#this-section-is-likely-to-bore-a" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>This section is likely to bore all but the most masochistic readers,
+so feel free to skip down to <a href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#conclusion">the Conclusion</a>.</p>
+</blockquote>
+
+<p id="i-started-by-grepping-for-incr-w"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#i-started-by-grepping-for-incr-w" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>I started by grepping for <code class="language-plaintext highlighter-rouge">"incr"</code> (with the quotes), since we want
+to imitate the existing <code class="language-plaintext highlighter-rouge">incr</code> command, and it must be parsed <em>somewhere</em>.
+That led me to a part of the <code class="language-plaintext highlighter-rouge">process_command</code> function that looks like this:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>} else if ((ntokens == 4 || ntokens == 5) &amp;&amp; (strcmp(tokens[COMMAND_TOKEN].value, "incr") == 0)) {
+    process_arithmetic_command(c, tokens, ntokens, 1);
+} else if ((ntokens == 4 || ntokens == 5) &amp;&amp; (strcmp(tokens[COMMAND_TOKEN].value, "decr") == 0)) {
+    process_arithmetic_command(c, tokens, ntokens, 0);
+</code></pre></div></div>
+
+<p id="the-argument-with-value-0-or-1-c"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#the-argument-with-value-0-or-1-c" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>The argument with value <code class="language-plaintext highlighter-rouge">0</code> or <code class="language-plaintext highlighter-rouge">1</code> corresponds to the parameter <code class="language-plaintext highlighter-rouge">bool incr</code>.
+I changed that to <code class="language-plaintext highlighter-rouge">int opcode</code> and changed these callers to</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>} else if ((ntokens == 4 || ntokens == 5) &amp;&amp; (strcmp(tokens[COMMAND_TOKEN].value, "incr") == 0)) {
+    process_arithmetic_command(c, tokens, ntokens, 1);
+} else if ((ntokens == 4 || ntokens == 5) &amp;&amp; (strcmp(tokens[COMMAND_TOKEN].value, "decr") == 0)) {
+    process_arithmetic_command(c, tokens, ntokens, 0);
+} else if ((ntokens == 4 || ntokens == 5) &amp;&amp; (strcmp(tokens[COMMAND_TOKEN].value, "mult") == 0)) {
+    process_arithmetic_command(c, tokens, ntokens, 2);
+</code></pre></div></div>
+
+<p id="these-magic-numbers-were-a-pret"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#these-magic-numbers-were-a-pret" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>(These magic numbers were a pretty bad design decision, but the quick decision
+keeps me moving forward. Ten minutes later, I’ll realize a better solution and
+revisit this code.)</p>
+
+<p id="i-skim-over-the-body-of-process_"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#i-skim-over-the-body-of-process_" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>I skim over the body of <code class="language-plaintext highlighter-rouge">process_arithmetic_command</code> looking for references to
+incrementing and decrementing. The error message
+<code class="language-plaintext highlighter-rouge">"CLIENT_ERROR cannot increment or decrement non-numeric value"</code>
+seems a little suboptimal, so I change that code to</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>if (opcode == 2) {
+    out_string(c, "CLIENT_ERROR cannot multiply non-numeric value");
+} else {
+    out_string(c, "CLIENT_ERROR cannot increment or decrement non-numeric value");
+}
+</code></pre></div></div>
+
+<p id="and-similarly-just-below"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#and-similarly-just-below" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>And similarly just below:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>+if (opcode == 2) {
++    c-&gt;thread-&gt;stats.mult_misses++;
++} else if (opcode == 1) {
+-if (incr) {
+     c-&gt;thread-&gt;stats.incr_misses++;
+ } else {
+     c-&gt;thread-&gt;stats.decr_misses++;
+ }
+</code></pre></div></div>
+
+<p id="mental-note-that-i-ll-have-to-ad"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#mental-note-that-i-ll-have-to-ad" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>Mental note that I’ll have to add a <code class="language-plaintext highlighter-rouge">mult_misses</code> field to whatever <code class="language-plaintext highlighter-rouge">c-&gt;thread-&gt;stats</code>
+is; but for now, press onward. If I forget, the compiler error will remind me.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-switch(add_delta(c, key, nkey, incr, delta, temp, NULL)) {
++switch(add_delta(c, key, nkey, opcode, delta, temp, NULL)) {
+</code></pre></div></div>
+
+<p id="grep-downward-for-add_delta."><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#grep-downward-for-add_delta." aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>Grep downward for <code class="language-plaintext highlighter-rouge">add_delta</code>.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> enum delta_result_type do_add_delta(conn *c, const char *key, const size_t nkey,
+-                                    const bool incr, const int64_t delta,
++                                    const int opcode, const int64_t delta,
+                                     char *buf, uint64_t *cas,
+                                     const uint32_t hv) {
+</code></pre></div></div>
+
+<p id="this-signature-violates-my-guide"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#this-signature-violates-my-guide" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>This signature violates my <a href="https://quuxplusone.github.io/blog/2019/01/03/const-is-a-contract/#guidelines-for-reliably-const-correct-code">guidelines for const-correct code</a>
+in that it passes a lot of things “by const value,” but let’s not take the bait.
+Replace <code class="language-plaintext highlighter-rouge">bool</code> with <code class="language-plaintext highlighter-rouge">int</code> and keep going.</p>
+
+<p id="finally-we-ve-found-the-place-we"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#finally-we-ve-found-the-place-we" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>Finally, we’ve found the place we were looking for — the place where we need to change <code class="language-plaintext highlighter-rouge">+</code> to <code class="language-plaintext highlighter-rouge">*</code>!
+This codepath becomes:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>+if (opcode == 2) {
++    value *= delta;
++    MEMCACHED_COMMAND_MULT(c-&gt;sfd, ITEM_key(it), it-&gt;nkey, value);
++} else if (opcode == 1) {
+-if (incr) {
+     value += delta;
+     MEMCACHED_COMMAND_INCR(c-&gt;sfd, ITEM_key(it), it-&gt;nkey, value);
+ } else {
+     if(delta &gt; value) {
+         value = 0;
+     } else {
+         value -= delta;
+     }
+     MEMCACHED_COMMAND_DECR(c-&gt;sfd, ITEM_key(it), it-&gt;nkey, value);
+ }
+</code></pre></div></div>
+
+<p id="mental-note-to-implement-memcach"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#mental-note-to-implement-memcach" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>Mental note to implement <code class="language-plaintext highlighter-rouge">MEMCACHED_COMMAND_MULT</code>, and press onward.
+A little further down, note that <code class="language-plaintext highlighter-rouge">slab_stats</code> needs a <code class="language-plaintext highlighter-rouge">mult_hits</code> field.</p>
+
+<p id="we-ve-reached-the-end-of-do_add_"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#we-ve-reached-the-end-of-do_add_" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>We’ve reached the end of <code class="language-plaintext highlighter-rouge">do_add_delta</code>. Wait, this is <code class="language-plaintext highlighter-rouge">do_add_delta</code>… so
+what’s <code class="language-plaintext highlighter-rouge">add_delta</code>? Ah, it’s called from two places. And the first place sets
+<code class="language-plaintext highlighter-rouge">bool incr</code> to <code class="language-plaintext highlighter-rouge">c-&gt;cmd == PROTOCOL_BINARY_CMD_INCREMENT</code>. Grepping for
+<code class="language-plaintext highlighter-rouge">PROTOCOL_BINARY_CMD_INCREMENT</code> reveals that there’s an enumeration of all
+the commands in <code class="language-plaintext highlighter-rouge">protocol_binary.h</code>! I should use that. Add
+<code class="language-plaintext highlighter-rouge">PROTOCOL_BINARY_CMD_MULTIPLY</code> to that enumeration, and refactor all of the
+work I’ve done so far to use <code class="language-plaintext highlighter-rouge">PROTOCOL_BINARY_CMD_{DECREMENT,INCREMENT,MULTIPLY}</code>
+instead of the magic numbers <code class="language-plaintext highlighter-rouge">0,1,2</code>. <code class="language-plaintext highlighter-rouge">int opcode</code> can stay as an <code class="language-plaintext highlighter-rouge">int</code>, since
+grepping for the enumeration type’s name (<code class="language-plaintext highlighter-rouge">protocol_binary_command</code>) reveals
+that literally nothing in the codebase uses that type by name.</p>
+
+<p id="implementing-memcached_command_m"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#implementing-memcached_command_m" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>Implementing <code class="language-plaintext highlighter-rouge">MEMCACHED_COMMAND_MULT</code> in <code class="language-plaintext highlighter-rouge">trace.h</code> tells me that I also need a macro
+named <code class="language-plaintext highlighter-rouge">MEMCACHED_COMMAND_MULT_ENABLED</code>. Where’s that used? It’s not. Okay. Add it anyway.
+(<a href="https://www.chesterton.org/taking-a-fence-down/">Chesterton’s Fence</a>: If I don’t
+know why these <code class="language-plaintext highlighter-rouge">_ENABLED</code> macros exist, then I certainly shouldn’t try to do anything
+novel with my new one. I’ll follow the herd.)</p>
+
+<p id="finishing-up-the-remaining-compi"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#finishing-up-the-remaining-compi" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>Finishing up the remaining compiler errors, I add a <code class="language-plaintext highlighter-rouge">mult_hits</code> field to <code class="language-plaintext highlighter-rouge">struct slab_stats</code>,
+right next to <code class="language-plaintext highlighter-rouge">incr_hits</code> and <code class="language-plaintext highlighter-rouge">decr_hits</code>.
+<code class="language-plaintext highlighter-rouge">git grep incr_hits</code> shows lots of places it’s used; when I’m done,
+<code class="language-plaintext highlighter-rouge">git grep mult_hits</code> shows the same number of uses. The line</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>out-&gt;incr_hits += stats-&gt;slab_stats[sid].incr_hits;
+</code></pre></div></div>
+
+<p id="is-sneaky-because-i-need-to-modi"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#is-sneaky-because-i-need-to-modi" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>is sneaky because I need to modify my copy of it in <em>two</em> places.
+I also add a <code class="language-plaintext highlighter-rouge">mult_misses</code> field to <code class="language-plaintext highlighter-rouge">struct thread_stats</code>, and change</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>if (c-&gt;cmd == PROTOCOL_BINARY_CMD_INCREMENT) {
+    c-&gt;thread-&gt;stats.incr_misses++;
+} else {
+    c-&gt;thread-&gt;stats.decr_misses++;
+}
+</code></pre></div></div>
+
+<p id="into"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#into" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>into</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>switch (c-&gt;cmd) {
+    case PROTOCOL_BINARY_CMD_INCREMENT: c-&gt;thread-&gt;stats.incr_misses++; break;
+    case PROTOCOL_BINARY_CMD_DECREMENT: c-&gt;thread-&gt;stats.decr_misses++; break;
+    case PROTOCOL_BINARY_CMD_MULTIPLY: c-&gt;thread-&gt;stats.mult_misses++; break;
+}
+</code></pre></div></div>
+
+<p id="we-don-t-technically-need-to-cha"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#we-don-t-technically-need-to-cha" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>We don’t technically need to change <code class="language-plaintext highlighter-rouge">add_delta</code> itself from taking a
+<code class="language-plaintext highlighter-rouge">const int incr</code> to taking a <code class="language-plaintext highlighter-rouge">const int opcode</code>, but I think it’s a good idea,
+so I do it.</p>
+
+<p id="i-reach-the-code-complete-milest"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#i-reach-the-code-complete-milest" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>I reach the “code complete” milestone in 25 minutes. Let’s try it out!</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>set age 0 3600 2
+37
+STORED
+mult age 10
+27
+</code></pre></div></div>
+
+<p id="aw-crap."><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#aw-crap." aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>Aw, crap.</p>
+
+<p id="i-return-to-the-place-where-the"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#i-return-to-the-place-where-the" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>I return to the place where the multiplication is supposed to be happening…</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>if (opcode == 2) {
+    value *= delta;
+</code></pre></div></div>
+
+<p id="ha-that-should-be-using-my-new-p"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#ha-that-should-be-using-my-new-p" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>Ha! That should be using my new <code class="language-plaintext highlighter-rouge">PROTOCOL_BINARY_CMD_MULTIPLY</code>. I fix that.
+In fact, I grep for <code class="language-plaintext highlighter-rouge">opcode ==</code> and fix a few more places I’d missed.
+I reach the “code <em>really</em> complete” milestone in 32 minutes. This time,
+the code really does seem to work. I run a few manual tests:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>set age 0 3600 2
+37
+STORED
+mult age 10
+370
+mult age 2
+740
+mult age -1
+CLIENT_ERROR invalid numeric delta argument
+
+set fullname 0 3600 10
+John Smith
+STORED
+mult fullname 1
+CLIENT_ERROR cannot multiply non-numeric value
+mult
+ERROR
+mult bogus 1
+NOT_FOUND
+</code></pre></div></div>
+
+<p id="i-check-its-behavior-on-integer"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#i-check-its-behavior-on-integer" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>I check its behavior on integer wraparound, and I check the syntax
+<code class="language-plaintext highlighter-rouge">mult age 10 noreply</code> to make sure that’s also supported. Since I
+implemented everything by copy-and-paste, there’s basically no way
+these things <em>won’t</em> work just as well as they work for <code class="language-plaintext highlighter-rouge">incr</code> and
+<code class="language-plaintext highlighter-rouge">decr</code>.</p>
+
+<p id="hmm-with-all-this-manual-testing"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#hmm-with-all-this-manual-testing" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>Hmm… with all this manual testing, I should probably write some actual
+tests. Are there tests in the repo? Yes, under <code class="language-plaintext highlighter-rouge">t/</code>. <code class="language-plaintext highlighter-rouge">make test</code> builds
+and runs them. So, I copy <code class="language-plaintext highlighter-rouge">t/incrdecr.t</code> into <code class="language-plaintext highlighter-rouge">t/mult.t</code> and modify it.
+I reach the “code <em>and tests</em> complete” milestone in 50 minutes.</p>
+
+<blockquote>
+  <p id="i-imagine-a-candidate-who-didn-t"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#i-imagine-a-candidate-who-didn-t" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>I imagine a candidate who didn’t mess with the tests would still pass
+the interview; priorities in an interview are different from priorities
+when making a pull request. Therefore this is a great place for even
+the most introverted candidate to raise their head and interact a little
+bit: “I think I’ve got something that works; do you want to take a look?”</p>
+</blockquote>
+
+<p id="i-see-there-s-more-tests-in-bina"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#i-see-there-s-more-tests-in-bina" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>I see there’s more tests in <code class="language-plaintext highlighter-rouge">binary.t</code>. I guess I should take a look at them too,
+even though I don’t feel like it. Yeah, yikes, there’s another copy of the command
+enumeration in there; I should add <code class="language-plaintext highlighter-rouge">CMD_MULTIPLY</code> to it, at least.</p>
+
+<p id="i-should-also-add-tests-for-the"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#i-should-also-add-tests-for-the" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>I should also add tests for the new stats, in <code class="language-plaintext highlighter-rouge">stats.t</code>. (Actually, because
+one of these tests simply counts the number of stats returned, and I’ve added
+two more stats, that test would <em>fail</em> if I didn’t modify it.)</p>
+
+<p id="around-the-60-minute-mark-i-hit"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#around-the-60-minute-mark-i-hit" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>Around the 60-minute mark I hit the “code <em>and tests</em> complete” milestone
+for the second time.</p>
+
+<p id="but-as-i-puzzle-my-way-through-t"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#but-as-i-puzzle-my-way-through-t" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>But as I puzzle my way through <code class="language-plaintext highlighter-rouge">t/udp.t</code>, I find a lot of tests devoted
+to the “binary protocol” (as opposed to the plain-text protocol we talked about
+in the problem statement). Should I modify the binary protocol as well as the
+plain-text one? Actually, I already have, thanks to this mindless diff in the
+function <code class="language-plaintext highlighter-rouge">dispatch_bin_command</code>.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    case PROTOCOL_BINARY_CMD_INCREMENT:
+    case PROTOCOL_BINARY_CMD_DECREMENT:
++   case PROTOCOL_BINARY_CMD_MULTIPLY:
+        if (keylen &gt; 0 &amp;&amp; extlen == 20 &amp;&amp; bodylen == (keylen + extlen)) {
+            bin_read_key(c, bin_reading_incr_header, 20);
+        } else {
+            protocol_error = 1;
+        }
+        break;
+</code></pre></div></div>
+
+<p id="but-higher-up-i-see-quiet-versio"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#but-higher-up-i-see-quiet-versio" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>But higher up, I see “quiet” versions of the same opcodes:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>case PROTOCOL_BINARY_CMD_INCREMENTQ:
+    c-&gt;cmd = PROTOCOL_BINARY_CMD_INCREMENT;
+    break;
+case PROTOCOL_BINARY_CMD_DECREMENTQ:
+    c-&gt;cmd = PROTOCOL_BINARY_CMD_DECREMENT;
+    break;
+</code></pre></div></div>
+
+<p id="i-m-not-sure-what-those-are-for"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#i-m-not-sure-what-those-are-for" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>I’m not sure what those are for, but in order to do my copy-paste trick in
+<code class="language-plaintext highlighter-rouge">t/udp.t</code>, I’ll have to add one of these for <code class="language-plaintext highlighter-rouge">mult</code>. (Chesterton’s Fence again:
+I don’t know why these “quiet” opcodes are important, but if <code class="language-plaintext highlighter-rouge">incr</code> and <code class="language-plaintext highlighter-rouge">decr</code>
+have them, then <code class="language-plaintext highlighter-rouge">mult</code> should have one too.) So I add <code class="language-plaintext highlighter-rouge">PROTOCOL_BINARY_CMD_MULTIPLYQ</code>
+and propagate that change through the codebase.</p>
+
+<p id="at-this-point-i-m-just-repeatedl"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#at-this-point-i-m-just-repeatedl" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>At this point I’m just repeatedly running <code class="language-plaintext highlighter-rouge">make test</code> and banging my head
+against the idiosyncrasies of the test code (which is all written in Perl
+and full of five- and six-parameter functions). I belatedly realize that
+some of the test files are failing simply because they start with a cryptic
+indication that says “I <a href="https://perldoc.perl.org/Test::More#I-love-it-when-a-plan-comes-together">plan</a>
+to run exactly 95 test cases,” but I’ve added extra tests, and this makes
+the plan fail.</p>
+
+<p id="around-90-minutes-i-call-it-a-da"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#around-90-minutes-i-call-it-a-da" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>Around 90 minutes, I call it a day. Some of the binary-protocol Perl tests
+are still failing; but I’m confident that that’s a problem with my tests,
+not with the server code itself. Here’s the secret downside to “just copy
+and paste and change the names”: The Perl tests for <code class="language-plaintext highlighter-rouge">incr</code> are basically
+of the form</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>initialize num to zero
+check that "incr num 1" returns 1
+check that "incr num 1" returns 2
+check that "incr num 1" returns 3
+</code></pre></div></div>
+
+<p id="obfuscated-through-a-number-of"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#obfuscated-through-a-number-of" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>(obfuscated through a number of layers of indirection), so when I do
+the obvious thing for multiplication, it comes out like</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>initialize num to zero
+check that "mult num 1" returns 0
+check that "mult num 1" returns 0
+check that "mult num 1" returns 0
+</code></pre></div></div>
+
+<p id="that-s-a-pretty-bad-test.-now-if"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#that-s-a-pretty-bad-test.-now-if" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>That’s a pretty bad test. Now, if making good tests was the <em>point</em>
+of this programming challenge, I’d spend the extra hour on it. Or if
+I were doing this to get a job, instead of for a blog post, I’d spend
+the extra hour on it. But for this blog post? I call it a day.</p>
+
+<h2 id="conclusion"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#conclusion" aria-label="Anchor" data-anchorjs-icon="" style="font-style: normal; font-variant: normal; font-kerning: auto; font-optical-sizing: auto; font-feature-settings: normal; font-variation-settings: normal; font-weight: normal; font-stretch: normal; font-size: 1em; line-height: inherit; font-family: anchorjs-icons; position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>Conclusion</h2>
+
+<p id="i-like-this-programming-challeng"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#i-like-this-programming-challeng" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>I like this programming challenge because it’s a microcosm of what
+most real-world programming is like. When you’re maintaining a large
+codebase, there are always going to be codepaths you don’t fully
+understand, idioms that feel unnecessary, and masses of code that
+can feel hard to get a foothold in.</p>
+
+<p id="this-challenge-is-particularly-w"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#this-challenge-is-particularly-w" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>This challenge is particularly well calibrated for an interview because
+there is only one correct answer: “change <code class="language-plaintext highlighter-rouge">bool incr</code> to <code class="language-plaintext highlighter-rouge">int opcode</code>”
+(or anything isomorphic to that). The codebase and problem statement
+together very clearly imply that there are currently <em>two</em> arithmetic
+opcodes, and your job is to extend that to <em>three</em> arithmetic opcodes.</p>
+
+<p id="imagine-how-much-more-open-ended"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#imagine-how-much-more-open-ended" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>Imagine how much more open-ended the problem would be if
+memcached didn’t have a <code class="language-plaintext highlighter-rouge">decr</code> command!
+Suppose <code class="language-plaintext highlighter-rouge">process_arithmetic_command</code> had been named
+<code class="language-plaintext highlighter-rouge">process_increment_command</code>, and <code class="language-plaintext highlighter-rouge">add_delta</code> didn’t take <code class="language-plaintext highlighter-rouge">bool incr</code>
+as a parameter, and so on. Then the candidate would have to make
+a bigger creative decision: <em>add</em> that parameter (in which position?),
+or <em>clone</em> an entire codepath (starting at what level?). Cloning even
+one of these functions is probably suboptimal, but I might spend
+twenty minutes before realizing that.</p>
+
+<p id="the-problem-as-presented-is-well"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#the-problem-as-presented-is-well" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>The problem as presented is well crafted to steer qualified
+candidates right onto the happy path, while weeding out a whole
+category of unqualified candidates. Basically, this question
+is to software engineers as
+<a href="https://imranontech.com/2007/01/24/using-fizzbuzz-to-find-developers-who-grok-coding/">FizzBuzz</a>
+is to programmers. And it’s fun, too!</p>
+
+<p id="so-there-you-have-it-the-best-en"><a class="anchorjs-link " href="https://quuxplusone.github.io/blog/2022/01/07/memcached-interview-solution/#so-there-you-have-it-the-best-en" aria-label="Anchor" data-anchorjs-icon="¶" style="position: absolute; margin-left: -1em; padding-right: 0.5em;"></a>So there you have it: the best engineering interview question
+I’ve ever gotten.</p>
+
+  </div>
+
+  <div class="date">
+    Posted 2022-01-07
+  </div>
+
+  <div>
+    
+    
+      <a href="https://quuxplusone.github.io/blog/tags/#sre" class="post-tag">sre</a>
+    
+      <a href="https://quuxplusone.github.io/blog/tags/#war-stories" class="post-tag">war-stories</a>
+    
+  </div>
+
+  
+</article>
+
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:arthur.j.odwyer@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="https://github.com/Quuxplusone"><i class="svg-icon github"></i></a>
+
+<a href="https://www.linkedin.com/in/arthur-odwyer"><i class="svg-icon linkedin"></i></a>
+
+<a href="https://quuxplusone.github.io/blog/feed.xml"><i class="svg-icon rss"></i></a>
+
+<a href="http://stackoverflow.com/users/1424877/quuxplusone"><i class="svg-icon stackoverflow"></i></a>
+
+
+        </footer>
+      </div>
+    </div>
+
+    
+
+<!-- start Mixpanel --><script type="text/javascript" async="" src="./best-interview-question_files/mixpanel-2-latest.min.js"></script><script type="text/javascript">(function(e,a){if(!a.__SV){var b=window;try{var c,l,i,j=b.location,g=j.hash;c=function(a,b){return(l=a.match(RegExp(b+"=([^&]*)")))?l[1]:null};g&&c(g,"state")&&(i=JSON.parse(decodeURIComponent(c(g,"state"))),"mpeditor"===i.action&&(b.sessionStorage.setItem("_mpcehash",g),history.replaceState(i.desiredHash||"",e.title,j.pathname+j.search)))}catch(m){}var k,h;window.mixpanel=a;a._i=[];a.init=function(b,c,f){function e(b,a){var c=a.split(".");2==c.length&&(b=b[c[0]],a=c[1]);b[a]=function(){b.push([a].concat(Array.prototype.slice.call(arguments,
+0)))}}var d=a;"undefined"!==typeof f?d=a[f]=[]:f="mixpanel";d.people=d.people||[];d.toString=function(b){var a="mixpanel";"mixpanel"!==f&&(a+="."+f);b||(a+=" (stub)");return a};d.people.toString=function(){return d.toString(1)+".people (stub)"};k="disable time_event track track_pageview track_links track_forms register register_once alias unregister identify name_tag set_config reset people.set people.set_once people.unset people.increment people.append people.union people.track_charge people.clear_charges people.delete_user".split(" ");
+for(h=0;h<k.length;h++)e(d,k[h]);a._i.push([b,c,f])};a.__SV=1.2;b=e.createElement("script");b.type="text/javascript";b.async=!0;b.src="undefined"!==typeof MIXPANEL_CUSTOM_LIB_URL?MIXPANEL_CUSTOM_LIB_URL:"file:"===e.location.protocol&&"//cdn.mxpnl.com/libs/mixpanel-2-latest.min.js".match(/^\/\//)?"https://cdn.mxpnl.com/libs/mixpanel-2-latest.min.js":"//cdn.mxpnl.com/libs/mixpanel-2-latest.min.js";c=e.getElementsByTagName("script")[0];c.parentNode.insertBefore(b,c)}})(document,window.mixpanel||[]);
+mixpanel.init('f8050bba65fe16fa9054e8656aebef3d');
+mixpanel.track('pageview', {
+    'page': '/blog/2022/01/07/memcached-interview-solution/',
+    'posted': '2022-01-07T00:01:00+00:00',
+    'hour': (new Date()).getHours(),
+})
+</script><!-- end Mixpanel -->
+
+
+    
+<script type="text/javascript">
+  /**
+ * AnchorJS - v4.1.0 - 2017-09-20
+ * https://github.com/bryanbraun/anchorjs
+ * Copyright (c) 2017 Bryan Braun; Licensed MIT
+ */
+!function(A,e){"use strict";"function"==typeof define&&define.amd?define([],e):"object"==typeof module&&module.exports?module.exports=e():(A.AnchorJS=e(),A.anchors=new A.AnchorJS)}(this,function(){"use strict";return function(A){function e(A){A.icon=A.hasOwnProperty("icon")?A.icon:"",A.visible=A.hasOwnProperty("visible")?A.visible:"hover",A.placement=A.hasOwnProperty("placement")?A.placement:"right",A.ariaLabel=A.hasOwnProperty("ariaLabel")?A.ariaLabel:"Anchor",A.class=A.hasOwnProperty("class")?A.class:"",A.truncate=A.hasOwnProperty("truncate")?Math.floor(A.truncate):64}function t(A){var e;if("string"==typeof A||A instanceof String)e=[].slice.call(document.querySelectorAll(A));else{if(!(Array.isArray(A)||A instanceof NodeList))throw new Error("The selector provided to AnchorJS was invalid.");e=[].slice.call(A)}return e}function i(){if(null===document.head.querySelector("style.anchorjs")){var A,e=document.createElement("style");e.className="anchorjs",e.appendChild(document.createTextNode("")),void 0===(A=document.head.querySelector('[rel="stylesheet"], style'))?document.head.appendChild(e):document.head.insertBefore(e,A),e.sheet.insertRule(" .anchorjs-link {   opacity: 0;   text-decoration: none;   -webkit-font-smoothing: antialiased;   -moz-osx-font-smoothing: grayscale; }",e.sheet.cssRules.length),e.sheet.insertRule(" *:hover > .anchorjs-link, .anchorjs-link:focus  {   opacity: 1; }",e.sheet.cssRules.length),e.sheet.insertRule(" [data-anchorjs-icon]::after {   content: attr(data-anchorjs-icon); }",e.sheet.cssRules.length),e.sheet.insertRule(' @font-face {   font-family: "anchorjs-icons";   src: url(data:n/a;base64,AAEAAAALAIAAAwAwT1MvMg8yG2cAAAE4AAAAYGNtYXDp3gC3AAABpAAAAExnYXNwAAAAEAAAA9wAAAAIZ2x5ZlQCcfwAAAH4AAABCGhlYWQHFvHyAAAAvAAAADZoaGVhBnACFwAAAPQAAAAkaG10eASAADEAAAGYAAAADGxvY2EACACEAAAB8AAAAAhtYXhwAAYAVwAAARgAAAAgbmFtZQGOH9cAAAMAAAAAunBvc3QAAwAAAAADvAAAACAAAQAAAAEAAHzE2p9fDzz1AAkEAAAAAADRecUWAAAAANQA6R8AAAAAAoACwAAAAAgAAgAAAAAAAAABAAADwP/AAAACgAAA/9MCrQABAAAAAAAAAAAAAAAAAAAAAwABAAAAAwBVAAIAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAMCQAGQAAUAAAKZAswAAACPApkCzAAAAesAMwEJAAAAAAAAAAAAAAAAAAAAARAAAAAAAAAAAAAAAAAAAAAAQAAg//0DwP/AAEADwABAAAAAAQAAAAAAAAAAAAAAIAAAAAAAAAIAAAACgAAxAAAAAwAAAAMAAAAcAAEAAwAAABwAAwABAAAAHAAEADAAAAAIAAgAAgAAACDpy//9//8AAAAg6cv//f///+EWNwADAAEAAAAAAAAAAAAAAAAACACEAAEAAAAAAAAAAAAAAAAxAAACAAQARAKAAsAAKwBUAAABIiYnJjQ3NzY2MzIWFxYUBwcGIicmNDc3NjQnJiYjIgYHBwYUFxYUBwYGIwciJicmNDc3NjIXFhQHBwYUFxYWMzI2Nzc2NCcmNDc2MhcWFAcHBgYjARQGDAUtLXoWOR8fORYtLTgKGwoKCjgaGg0gEhIgDXoaGgkJBQwHdR85Fi0tOAobCgoKOBoaDSASEiANehoaCQkKGwotLXoWOR8BMwUFLYEuehYXFxYugC44CQkKGwo4GkoaDQ0NDXoaShoKGwoFBe8XFi6ALjgJCQobCjgaShoNDQ0NehpKGgobCgoKLYEuehYXAAAADACWAAEAAAAAAAEACAAAAAEAAAAAAAIAAwAIAAEAAAAAAAMACAAAAAEAAAAAAAQACAAAAAEAAAAAAAUAAQALAAEAAAAAAAYACAAAAAMAAQQJAAEAEAAMAAMAAQQJAAIABgAcAAMAAQQJAAMAEAAMAAMAAQQJAAQAEAAMAAMAAQQJAAUAAgAiAAMAAQQJAAYAEAAMYW5jaG9yanM0MDBAAGEAbgBjAGgAbwByAGoAcwA0ADAAMABAAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAH//wAP) format("truetype"); }',e.sheet.cssRules.length)}}this.options=A||{},this.elements=[],e(this.options),this.isTouchDevice=function(){return!!("ontouchstart"in window||window.DocumentTouch&&document instanceof DocumentTouch)},this.add=function(A){var n,o,s,a,r,c,h,l,u,d,f,p=[];if(e(this.options),"touch"===(f=this.options.visible)&&(f=this.isTouchDevice()?"always":"hover"),A||(A="h2, h3, h4, h5, h6"),0===(n=t(A)).length)return this;for(i(),o=document.querySelectorAll("[id]"),s=[].map.call(o,function(A){return A.id}),r=0;r<n.length;r++)if(this.hasAnchorJSLink(n[r]))p.push(r);else{if(n[r].hasAttribute("id"))a=n[r].getAttribute("id");else if(n[r].hasAttribute("data-anchor-id"))a=n[r].getAttribute("data-anchor-id");else{u=l=this.urlify(n[r].textContent),h=0;do{void 0!==c&&(u=l+"-"+h),c=s.indexOf(u),h+=1}while(-1!==c);c=void 0,s.push(u),n[r].setAttribute("id",u),a=u}a.replace(/-/g," "),(d=document.createElement("a")).className="anchorjs-link "+this.options.class,d.href="#"+a,d.setAttribute("aria-label",this.options.ariaLabel),d.setAttribute("data-anchorjs-icon",this.options.icon),"always"===f&&(d.style.opacity="1"),""===this.options.icon&&(d.style.font="1em/1 anchorjs-icons","left"===this.options.placement&&(d.style.lineHeight="inherit")),"left"===this.options.placement?(d.style.position="absolute",d.style.marginLeft="-1em",d.style.paddingRight="0.5em",n[r].insertBefore(d,n[r].firstChild)):(d.style.paddingLeft="0.375em",n[r].appendChild(d))}for(r=0;r<p.length;r++)n.splice(p[r]-r,1);return this.elements=this.elements.concat(n),this},this.remove=function(A){for(var e,i,n=t(A),o=0;o<n.length;o++)(i=n[o].querySelector(".anchorjs-link"))&&(-1!==(e=this.elements.indexOf(n[o]))&&this.elements.splice(e,1),n[o].removeChild(i));return this},this.removeAll=function(){this.remove(this.elements)},this.urlify=function(A){var t=/[^A-Za-z0-9._-]/g;return this.options.truncate||e(this.options),A.trim().replace(/\'/gi,"").replace(t,"-").replace(/-{2,}/g,"-").substring(0,this.options.truncate).replace(/^-+|-+$/gm,"").toLowerCase()},this.hasAnchorJSLink=function(A){var e=A.firstChild&&(" "+A.firstChild.className+" ").indexOf(" anchorjs-link ")>-1,t=A.lastChild&&(" "+A.lastChild.className+" ").indexOf(" anchorjs-link ")>-1;return e||t||!1}}});
+
+  new AnchorJS({
+    placement: 'left',
+    truncate: 32,
+    visible: 'hover',
+  }).add('h2:not(.h2-on-tags-page-collapsed):not(.h2-on-tags-page-expanded)');
+
+  new AnchorJS({
+    icon: '¶',
+    placement: 'left',
+    truncate: 32,
+    visible: 'hover',
+  }).add('p');
+</script>
+
+
+    <script type="text/javascript">
+window.MathJax = {
+  tex: {
+    packages: ['base', 'ams']
+  },
+  loader: {
+    load: ['ui/menu', '[tex]/ams']
+  },
+  startup: {
+    ready() {
+      MathJax.startup.defaultReady();
+      const Macro = MathJax._.input.tex.Symbol.Macro;
+      const MapHandler = MathJax._.input.tex.MapHandler.MapHandler;
+      const Array = MathJax._.input.tex.ams.AmsMethods.AmsMethods.Array;
+      const env = new Macro('psmallmatrix', Array, [null, '(', ')', 'c', '.333em', '.2em', 'S', 1]);
+      MapHandler.getMap('AMSmath-environment').add('psmallmatrix', env);
+    }
+  }
+};
+</script>
+<script type="text/javascript" id="MathJax-script" async="" src="./best-interview-question_files/tex-chtml.js">
+</script>
+
+  
+
+</body></html>

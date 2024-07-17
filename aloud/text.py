@@ -1,5 +1,3 @@
-import builtins
-
 from aloud.console import console
 
 LINE_NUMBER_SEPARATOR = '│'
@@ -27,6 +25,16 @@ def remove_line_numbers(markdown: str) -> str:
     return markdown
 
 
+def has_line_numbers(markdown: str) -> bool:
+    if not markdown:
+        return False
+    markdown_lines = markdown.splitlines()
+    stripped_markdown_lines = [line.strip() for line in markdown_lines if line.strip()]
+    if not stripped_markdown_lines:
+        return False
+    return f'0 {LINE_NUMBER_SEPARATOR}' in stripped_markdown_lines[0]
+
+
 def remove_lines_until(markdown: str, line: str) -> str:
     markdown_lines = markdown.splitlines()
     line_index = index_of(markdown_lines, line)
@@ -46,31 +54,42 @@ def remove_lines_after(markdown: str, line: str) -> str:
     return clean_markdown
 
 
-def index_of(string_lines: list[str], substring: str, *, case_sensitive=True) -> int:
-    lines_equal_to_substring = [line for line in string_lines if line == substring]
-    if lines_equal_to_substring:
-        if len(lines_equal_to_substring) > 1:
-            console.warning(
-                '%d lines equal to substring %r' % (len(lines_equal_to_substring), substring),
-            )
-        return string_lines.index(lines_equal_to_substring[0])
-    lines_starting_with_substring = [line for line in string_lines if line.startswith(substring)]
-    if lines_starting_with_substring:
-        return string_lines.index(lines_starting_with_substring[0])
-    lines_containing_substring = [line for line in string_lines if substring in line]
-    if lines_containing_substring:
-        return string_lines.index(lines_containing_substring[0])
+def index_of(string_lines: list[str], substring: str, *, case_sensitive=True) -> int | None:
+    def _warn_ambiguity(collection, verb: str):
+        indices = [_index for _index, _ in collection]
+        console.warning(
+            f'AmbiguousIndex: %d lines {verb} substring %r in indices %s. Returning first=%d',
+            len(equal),
+            substring,
+            ', '.join(map(str, indices)),
+            indices[0],
+        )
+
+    equal = []
+    startwith = []
+    contain = []
+    for i, line in enumerate(string_lines):
+        if line == substring:
+            equal.append((i, line))
+            continue
+        if line.startswith(substring):
+            startwith.append((i, line))
+            continue
+        if substring in line:
+            contain.append((i, line))
+            continue
+    if equal:
+        len(equal) > 1 and _warn_ambiguity(equal, 'equal to')
+        index, line = equal[0]
+        return index
+    if startwith:
+        len(startwith) > 1 and _warn_ambiguity(startwith, 'start with')
+        index, line = startwith[0]
+        return index
+    if contain:
+        len(contain) > 1 and _warn_ambiguity(contain, 'contain')
+        index, line = contain[0]
+        return index
     if case_sensitive:
-        return index_of([line.lower() for line in string_lines], substring.lower(), case_sensitive=False)
-    hasattr(builtins, 'live') and builtins.live.stop()
-    breakpoint()
-
-
-def has_line_numbers(markdown: str) -> bool:
-    if not markdown:
-        return False
-    markdown_lines = markdown.splitlines()
-    stripped_markdown_lines = [line.strip() for line in markdown_lines if line.strip()]
-    if not stripped_markdown_lines:
-        return False
-    return f'0 {LINE_NUMBER_SEPARATOR}' in stripped_markdown_lines[0]
+        return index_of([line.casefold() for line in string_lines], substring.lower(), case_sensitive=False)
+    return None

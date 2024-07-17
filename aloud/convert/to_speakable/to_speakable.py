@@ -3,6 +3,7 @@ from pathlib import Path
 
 from langchain import hub
 from langchain.prompts import PromptTemplate
+from lazy_object_proxy import Proxy
 from rich.color import Color
 from rich.style import Style
 from rich.text import Text
@@ -37,7 +38,7 @@ from aloud.oai import oai
 # """.strip()
 # If you encounter a list, append the sentence just before it with a very short saying, communicating that a list is coming up. The saying should meld very organically with the sentence.
 
-TO_SPEAKABLE: PromptTemplate = hub.pull('pecan-ai/aloud-to-speakable')
+TO_SPEAKABLE: PromptTemplate = Proxy(lambda: hub.pull('pecan-ai/aloud-to-speakable'))
 
 
 def to_speakable(thing: str | Path, output_dir: str | Path) -> Generator[str, None, None]:
