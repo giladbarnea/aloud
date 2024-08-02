@@ -6,7 +6,7 @@ from aloud.thread_pool_executor import ThreadPoolExecutor
 
 def to_audio(
     speakable: str,
-    voice: models.Voice = models.Voice.default,
+    voice: models.VOICE = models.VOICE.default,
     voice_model: models.VoiceModel = models.VoiceModel.default,
     voice_response_format: models.VoiceResponseFormat = models.VoiceResponseFormat.default,
 ) -> bytes:
@@ -29,7 +29,7 @@ def to_audio(
 # noinspection PyShadowingBuiltins
 def chunk_to_audio(
     input: str,
-    voice: models.Voice = models.Voice.default,
+    voice: models.VOICE = models.VOICE.default,
     voice_model: models.VoiceModel = models.VoiceModel.default,
     voice_response_format: models.VoiceResponseFormat = models.VoiceResponseFormat.default,
 ) -> bytes:

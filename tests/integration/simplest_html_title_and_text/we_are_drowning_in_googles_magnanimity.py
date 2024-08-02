@@ -1,6 +1,7 @@
 import textwrap
 from pathlib import Path
 
+from aloud.models import DEFAULT_CHAT_MODEL
 from aloud.oai import oai
 
 ARTICLE_URL = 'https://www.kpassa.me/posts/google'
@@ -30,7 +31,7 @@ def test_generate_audio(to_markdown):
     )
     chat_completion = oai.chat.completions.create(
         messages=[{'role': 'user', 'content': prompt}],
-        model='gpt-4-1106-preview',
+        model=DEFAULT_CHAT_MODEL,
     )
     result = chat_completion.choices[0].message.content
     chunk_size = 4096

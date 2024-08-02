@@ -27,54 +27,54 @@ class Annotated(_Annotated):
 
 def random_voice(ctx, param, value):  # noqa: ARG001
     if value == 'random':
-        return random.choice(voices)
+        return random.choice(VOICES)
     return value
 
 
-voices = ('alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer')
-default_voice = 'random'
-Voice = Literal[voices]
-Voice.default = default_voice
+VOICES = ('alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer')
+DEFAULT_VOICE = 'random'
+VOICE = Literal[VOICES]
+VOICE.default = DEFAULT_VOICE
 VoiceOption = Annotated[
     str,
     typer.Option(
         '-v',
         '--voice',
         show_default=True,
-        click_type=click.Choice((*voices, 'random')),
+        click_type=click.Choice((*VOICES, 'random')),
         callback=random_voice,
     ),
-    default_voice,
+    DEFAULT_VOICE,
 ]
 
-voice_models = ('tts-1', 'tts-1-hd')
-default_voice_model = 'tts-1'
-VoiceModel = Literal[voice_models]
-VoiceModel.default = default_voice_model
+VOICE_MODELS = ('tts-1', 'tts-1-hd')
+DEFAULT_VOICE_MODEL = 'tts-1'
+VoiceModel = Literal[VOICE_MODELS]
+VoiceModel.default = DEFAULT_VOICE_MODEL
 VoiceModelOption = Annotated[
     str,
-    typer.Option('--voice-model', click_type=click.Choice(voice_models)),
-    default_voice_model,
+    typer.Option('--voice-model', click_type=click.Choice(VOICE_MODELS)),
+    DEFAULT_VOICE_MODEL,
 ]
 
-chat_models = ('gpt-4-1106-preview', 'gpt-4', 'gpt-3.5-turbo')
-default_chat_model = 'gpt-4-1106-preview'
-ChatModel = Literal[chat_models]
-ChatModel.default = default_chat_model
+CHAT_MODELS = ('gpt-4o', 'gpt-4-turbo', 'gpt-4', 'gpt-3.5-turbo')
+DEFAULT_CHAT_MODEL = 'gpt-4-turbo'
+ChatModel = Literal[CHAT_MODELS]
+ChatModel.default = DEFAULT_CHAT_MODEL
 ChatModelOption = Annotated[
     str,
-    typer.Option('--model', click_type=click.Choice(chat_models)),
-    default_chat_model,
+    typer.Option('--model', click_type=click.Choice(CHAT_MODELS)),
+    DEFAULT_CHAT_MODEL,
 ]
 
-voice_response_formats = ('mp3', 'opus', 'aac', 'flac')
-default_voice_response_format = 'mp3'
-VoiceResponseFormat = Literal[voice_response_formats]
-VoiceResponseFormat.default = default_voice_response_format
+VOICE_RESPONSE_FORMATS = ('mp3', 'opus', 'aac', 'flac')
+DEFAULT_VOICE_RESPONSE_FORMAT = 'mp3'
+VoiceResponseFormat = Literal[VOICE_RESPONSE_FORMATS]
+VoiceResponseFormat.default = DEFAULT_VOICE_RESPONSE_FORMAT
 VoiceResponseFormatOption = Annotated[
     str,
-    typer.Option('--voice-response-format', click_type=click.Choice(voice_response_formats)),
-    default_voice_response_format,
+    typer.Option('--voice-response-format', click_type=click.Choice(VOICE_RESPONSE_FORMATS)),
+    DEFAULT_VOICE_RESPONSE_FORMAT,
 ]
 
 OpenAIKeyOption = Annotated[
@@ -82,5 +82,5 @@ OpenAIKeyOption = Annotated[
     typer.Option('-k', '--openai-api-key', callback=cli_utils.get_openai_api_key, envvar='OPENAI_API_KEY'),
 ]
 
-default_output_dir = Path('/tmp')
-OutputDir = Annotated[Path, typer.Option('-o', '--output-dir'), default_output_dir]
+DEFAULT_OUTPUT_DIR = Path('/tmp')
+OutputDir = Annotated[Path, typer.Option('-o', '--output-dir'), DEFAULT_OUTPUT_DIR]

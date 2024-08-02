@@ -12,6 +12,7 @@ def process(
     thing: str,
     only_speakable: bool = False,  # noqa: FBT001,FBT002 Boolean positional
     only_audio: bool = False,  # noqa: FBT001,FBT002 Boolean positional
+    chat_model: models.ChatModelOption = models.ChatModelOption.default,
     voice: models.VoiceOption = models.VoiceOption.default,
     voice_model: models.VoiceModelOption = models.VoiceModelOption.default,
     voice_response_format: models.VoiceResponseFormatOption = models.VoiceResponseFormatOption.default,
@@ -21,10 +22,10 @@ def process(
     assert_args_ok(only_audio, only_speakable, output_dir)
     output_dir = prepare_output_dir(thing, output_dir)
     if only_speakable:
-        return ''.join(convert.to_speakable(thing, output_dir)).encode()
+        return ''.join(convert.to_speakable(thing, output_dir, chat_model)).encode()
     if only_audio:
         return process_audio(voice, voice_model, voice_response_format, output_dir)
-    speakable: str = ''.join(convert.to_speakable(thing, output_dir))
+    speakable: str = ''.join(convert.to_speakable(thing, output_dir, chat_model))
     return process_audio(speakable, voice, voice_model, voice_response_format, output_dir)
 
 

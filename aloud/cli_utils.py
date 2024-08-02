@@ -92,9 +92,9 @@ def prepare_output_dir(thing: str | Path | None, output_dir: str | Path | None) 
         if inferred_subdir:
             return Path.cwd() / inferred_subdir
         return Path.cwd() / random_string
-    from aloud.models import default_output_dir
+    from aloud.models import DEFAULT_OUTPUT_DIR
 
-    return default_output_dir / random_string
+    return DEFAULT_OUTPUT_DIR / random_string
 
 
 def assert_args_ok(only_audio: bool, only_speakable: bool, output_dir: str | Path | None = None):  # noqa: FBT001 Boolean positional

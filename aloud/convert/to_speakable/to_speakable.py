@@ -8,6 +8,7 @@ from rich.color import Color
 from rich.style import Style
 from rich.text import Text
 
+from aloud import models
 from aloud.console import console, get_gradient_color
 from aloud.convert import to_html, to_markdown
 from aloud.oai import oai
@@ -41,13 +42,16 @@ from aloud.oai import oai
 TO_SPEAKABLE: PromptTemplate = Proxy(lambda: hub.pull('pecan-ai/aloud-to-speakable'))
 
 
-def to_speakable(thing: str | Path, output_dir: str | Path) -> Generator[str, None, None]:
+def to_speakable(
+    thing: str | Path,
+    output_dir: str | Path,
+    chat_model: models.ChatModelOption,
+) -> Generator[str, None, None]:
     output_dir = Path(output_dir)
     if Path(thing).is_file():
         thing = Path(thing).read_text()
     html = to_html(thing, remove_head=True, output_dir=output_dir)
     markdown = to_markdown(html, output_dir=output_dir)
-    model = 'gpt-4-1106-preview'
     to_speakable_with_markdown = TO_SPEAKABLE.format(markdown=markdown)
     # prompt = prompts.ChatPromptTemplate.from_messages(
     #     [
@@ -55,7 +59,7 @@ def to_speakable(thing: str | Path, output_dir: str | Path) -> Generator[str, No
     #         ("human", "{markdown}")
     #     ]
     # )
-    # llm = chat_models.ChatOpenAI(model_name=model, temperature=0, streaming=True)
+    # llm = CHAT_MODELS.ChatOpenAI(model_name=model, temperature=0, streaming=True)
     # chain = prompt | llm | output_parser.StrOutputParser()
     #
     # eval_config = smith.RunEvalConfig(
@@ -66,7 +70,7 @@ def to_speakable(thing: str | Path, output_dir: str | Path) -> Generator[str, No
     #         smith.RunEvalConfig.LabeledCriteria("coherence")
     #     ],
     #     custom_evaluators=[],
-    #     eval_llm=chat_models.ChatOpenAI(model_name="gpt-4", temperature=0)
+    #     eval_llm=CHAT_MODELS.ChatOpenAI(model_name="gpt-4", temperature=0)
     # )
     #
     # client = langsmith.Client()
@@ -79,14 +83,13 @@ def to_speakable(thing: str | Path, output_dir: str | Path) -> Generator[str, No
     #     verbose=True,
     # )
     speakable = '\n'
-    with console.status(f'Converting markdown to speakable with {model}...') as live:
+    with console.status(f'Converting markdown to speakable with {chat_model}...') as live:
         start_color = (125, 125, 125)
         end_color = (255, 255, 255)
-        for stream_chunk in oai.chat.completions.create(
+        for stream_chunk in oai.chat.stream(
             messages=[{'role': 'user', 'content': to_speakable_with_markdown}],
-            model=model,
+            model=chat_model,
             temperature=0,
-            stream=True,
         ):
             delta = stream_chunk.choices[0].delta.content or ''
             yield delta
